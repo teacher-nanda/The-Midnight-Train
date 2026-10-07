@@ -196,7 +196,6 @@ button{font:inherit;color:inherit;cursor:pointer}
     <div class="ticket"><span>Single journey</span><span>Departs 00.01</span><span>Book club edition</span></div>
     <h1>The Midnight <span>Train Club</span></h1>
     <p class="lede">Matt Haig's novel as a game night. Pick the stop you reached, then play your way through the recap, quotes, discussion cards, vocabulary and quiz. Built from Nanda's highlights, one weekly part at a time.</p>
-    <div class="readto" id="readto" role="group" aria-label="How far did you read"></div>
   </header>
   <section class="board" aria-label="Departures"><div class="board-head"><span>Time</span><span>Part</span><span>Read to</span><span>Status</span></div><div id="board"></div></section>
   <section id="part"></section>
@@ -281,7 +280,7 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const S={part:1,tab:'windows',readTo:P.length,reveal:{},teams:[{n:'Team Agnes',s:0},{n:'Team Wilbur',s:0}],act:0,sort:{},who:{},talk:{},votes:{},wc:{},quiz:{}};
-try{const sv=JSON.parse(localStorage.getItem('mtc2')||'null');if(sv){S.readTo=sv.readTo||P.length;if(sv.teams&&sv.teams.length)S.teams=sv.teams;S.act=sv.act||0}}catch(e){}
+try{const sv=JSON.parse(localStorage.getItem('mtc2')||'null');if(sv){if(sv.teams&&sv.teams.length)S.teams=sv.teams;S.act=sv.act||0}}catch(e){}
 const save=()=>{try{localStorage.setItem('mtc2',JSON.stringify({readTo:S.readTo,teams:S.teams,act:S.act}))}catch(e){}};
 let toastT;const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),1600)};
 const award=(n,why)=>{const t=S.teams[S.act];t.s+=n;save();renderBar();toast('+'+n+' '+t.n+(why?' · '+why:''))};
@@ -290,17 +289,14 @@ const cur=()=>P.find(p=>p.id===S.part);
 const TABS=[['windows','Windows'],['quotes','Quote Car'],['talk','Talk Car'],['words','Word Car'],['quiz','Conductor’s Quiz']];
 
 const endCh=p=>{const m=p.pages.split('” to “');return (m[1]||p.pages).replace(/[“”]/g,'')};
-function renderReadto(){
-  if(P.filter(p=>!p.locked).length<2){$('#readto').innerHTML='';return}
-  $('#readto').innerHTML='<b>How far did you read?</b>'+P.filter(p=>!p.locked).map(p=>`<button class="chip" aria-pressed="${S.readTo===p.id}" data-r="${p.id}">To Part ${p.id} (“${endCh(p)}”)</button>`).join('');
-  $('#readto').onclick=e=>{const b=e.target.closest('[data-r]');if(!b)return;S.readTo=+b.dataset.r;save();renderReadto();renderBoard();renderPart()};
-}
+function renderReadto(){const r=$('#readto');if(r)r.remove()}
 function renderBoard(){
   const anyLock=P.some(p=>p.locked);
   $('#board').innerHTML=P.map((p,i)=>`<button class="row ${p.id===S.part?'sel':''} ${p.locked?'late':''}" data-p="${p.id}" style="animation-delay:${i*70}ms"><span class="t">${p.time}</span><span class="d">${p.locked?'Part '+p.id:p.name}</span><span class="p">${p.locked?'&nbsp;':'to “'+endCh(p)+'”'}</span><span class="st">${p.locked?'Coming soon':(p.id>S.readTo?'Spoilers ahead':(p.id===S.part?'Now boarding':'On time'))}</span></button>`).join('')+
   '';
   $('#board').onclick=e=>{const b=e.target.closest('[data-p]');if(!b)return;S.part=+b.dataset.p;S.tab='windows';renderBoard();renderPart();$('#part').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'})};
 }
+const tabsFor=p=>TABS.map(t=>p.car&&t[0]===p.car.slot?['car',p.car.name]:t);
 function renderPart(){
   const p=cur(),el=$('#part');
   if(p.locked){el.innerHTML=`<div class="part-head"><div><div class="eyebrow">Part ${p.id}</div><h2>Coming soon</h2></div></div><div class="shield" style="margin-top:18px;border-color:var(--lamp)"><h3>This train is coming soon</h3><p>Keep up with your nice reading work. This part will be boarding before you know it.</p><button class="btn lamp" id="back1">Back to Part 1</button></div>`;
@@ -310,10 +306,10 @@ function renderPart(){
     body=`<div class="shield"><h3>Spoiler shield</h3><p>This part covers ${p.pages}. You said you read only to Part ${S.readTo}, so the recap, quotes and answers stay hidden.</p><button class="btn ghost" id="rv">Show it anyway</button></div>`;
   } else body='<div class="panel" id="panel"></div>';
   el.innerHTML=`<div class="part-head"><div><div class="eyebrow">Part ${p.id} &middot; ${p.pages}</div><h2>${p.name}</h2></div><p class="sub">${p.tag}</p></div>
-  <div class="tabs" role="tablist">${TABS.map(t=>`<button class="tab" role="tab" aria-selected="${S.tab===t[0]}" data-t="${t[0]}">${t[1]}</button>`).join('')}</div>${body}`;
+  <div class="tabs" role="tablist">${tabsFor(p).map(t=>`<button class="tab" role="tab" aria-selected="${S.tab===t[0]}" data-t="${t[0]}">${t[1]}</button>`).join('')}</div>${body}`;
   el.querySelector('.tabs').onclick=e=>{const b=e.target.closest('[data-t]');if(!b)return;S.tab=b.dataset.t;renderPart()};
   const rv=$('#rv');if(rv)rv.onclick=()=>{S.reveal[p.id]=1;renderPart()};
-  if($('#panel'))({windows:rWindows,quotes:rQuotes,talk:rTalk,words:rWords,quiz:rQuiz})[S.tab](p,$('#panel'));
+  if($('#panel')){clearInterval(ctick);if(!tabsFor(p).some(t=>t[0]===S.tab))S.tab='windows';({windows:rWindows,quotes:rQuotes,talk:rTalk,words:rWords,quiz:rQuiz,car:(q,x)=>CARS[q.car.id](q,x)})[S.tab](p,$('#panel'))}
 }
 /* progress dots */
 const prog=(n,i,res)=>`<div class="prog">${Array.from({length:n},(_,k)=>`<i class="${res[k]===1?'ok':(k===i?'on':'')}"></i>`).join('')}</div>`;
@@ -386,6 +382,102 @@ function rWords(p,el){
    (s,n)=>({eyebrow:'Word check done',line:s===n?'Every word used correctly.':'Flip the cards you missed and say each one in a new sentence.'}),
    `<h3>Word check</h3><p class="how">Fill the blank. 2 points each for the active team.</p>`);
 }
+/* Bonus cars: a different activity in each part from 3 onward */
+const CARMAP={3:['speed','quotes'],4:['debate','talk'],5:['taboo','quotes'],6:['charades','talk'],7:['headline','quotes'],8:['hotseat','talk'],9:['cloze','quotes'],10:['debate','talk'],11:['paraphrase','quotes'],12:['speed','talk'],13:['hotseat','quotes'],14:['taboo','talk'],15:['cloze','quotes'],16:['headline','talk']};
+const CARNAME={speed:'Speed Car',debate:'Debate Car',taboo:'Taboo Car',charades:'Charades Car',headline:'Headline Car',hotseat:'Hot Seat Car',cloze:'Gap Car',paraphrase:'Retell Car'};
+P.forEach(p=>{if(p.locked)return;if(p.id>=3&&p.talk)p.talk=p.talk.slice(0,4);const m=CARMAP[p.id];if(m)p.car={id:m[0],name:CARNAME[m[0]],slot:m[1]}});
+(()=>{const s=document.createElement('style');s.textContent=`.bx{display:grid;gap:14px;margin-top:14px}.bigtxt{font-family:var(--f-display);font-size:clamp(24px,4.4vw,44px);line-height:1.15;font-weight:600;text-transform:uppercase;letter-spacing:.02em}.sidebox{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}.sidebox>div{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--card,transparent)}.sidebox b{display:block;font-family:var(--f-display);font-size:22px;text-transform:uppercase}.forb{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.forb .pill{border-color:#C75B4F;color:#C75B4F}.clz{line-height:2.1;font-size:18px}.clz select{font:inherit;max-width:100%;padding:2px 6px;border-radius:8px;border:1px solid var(--line);background:var(--bg,#fff);color:inherit}.clz select.ok{border-color:#3E8E5A;background:#3E8E5A22}.clz select.no{border-color:#C75B4F;background:#C75B4F22}.bank{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.blur{filter:blur(9px);user-select:none}.tbig{font-family:var(--f-type);font-size:34px;letter-spacing:.06em}`;document.head.appendChild(s)})();
+let ctick=null;
+function cTimer(box,secs,label){
+  clearInterval(ctick);let left=secs;const fmt=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+  box.innerHTML=`<div class="tbig" id="ct">${fmt(secs)}</div><div class="btns"><button class="btn lamp" id="cgo">${label||'Start timer'}</button></div>`;
+  $('#cgo').onclick=()=>{clearInterval(ctick);left=secs;$('#ct').textContent=fmt(left);ctick=setInterval(()=>{left--;const t=$('#ct');if(t)t.textContent=fmt(Math.max(left,0));if(left<=0){clearInterval(ctick);toast('Time. Pass it on.')}},1000)};
+}
+const pickNew=(st,n)=>{st.used=st.used||[];let left=[...Array(n).keys()].filter(i=>!st.used.includes(i));if(!left.length){st.used=[];left=[...Array(n).keys()]}const i=left[Math.floor(Math.random()*left.length)];st.used.push(i);return i};
+const CS={};const cst=p=>CS[p.id]||(CS[p.id]={});
+/* 1. Speed Car: true or false on the quiz facts */
+function rSpeed(p,el){
+  const st=cst(p);
+  mcq(el,st,()=>shuffle(p.quiz).map(q=>{const right=q.o[q.a];const wrongs=q.o.filter((_,i)=>i!==q.a);const isTrue=Math.random()<.5;const shown=isTrue?right:wrongs[Math.floor(Math.random()*wrongs.length)];
+    return{q:`${q.q}<br><b>Answer given: ${shown}</b>`,cls:'wide',o:['True','False'],a:isTrue?0:1,rev:`<p>${q.e}</p>`}}),2,
+   (s,n)=>({eyebrow:'Speed round done',line:s===n?'Flawless. Nobody fooled you.':s>=n/2?'Quick thinking. Check the windows for the ones that tricked you.':'Tricky! Look at the Windows tab and try again.'}),
+   `<h3>Speed Car: true or false?</h3><p class="how">Read the question and the answer given aloud. The team on turn calls it: true or false? Quick answers only, 2 points each, and the ticket moves on.</p>`);
+}
+/* 2. Debate Car */
+function rDebate(p,el){
+  const st=cst(p);st.d=st.d||{};
+  el.innerHTML=`<h3>Debate Car</h3><p class="how">Pick a statement. Flip a coin for sides: one team argues FOR, the other AGAINST, even if they do not agree. Each side gets a minute. Then everyone votes with hands up and the winning side scores 2 points.</p><div class="bx">${p.hot.map((h,i)=>`<div class="card" data-i="${i}"><div class="eyebrow">Statement ${i+1}</div><div class="bigtxt" style="font-size:clamp(20px,3.2vw,30px)">${h.s}</div><div class="sidebox" id="sd${i}"></div><div id="tb${i}"></div><div class="btns" id="bt${i}"></div></div>`).join('')}</div>`;
+  const T=S.teams;
+  const paint=i=>{const d=st.d[i];const sd=$('#sd'+i),bt=$('#bt'+i);
+    if(!d){sd.innerHTML='';bt.innerHTML='<button class="btn lamp" data-a="flip">Flip for sides</button>';return}
+    const a=T[d.f%T.length],b=T[(d.f+1)%T.length];
+    sd.innerHTML=`<div><small>Argues FOR</small><b>${esc(a.n)}</b></div><div><small>Argues AGAINST</small><b>${esc(b.n)}</b></div>`;
+    bt.innerHTML=`<button class="btn ghost" data-a="tm">Start 60s timer</button><button class="btn lamp" data-a="w0">FOR wins +2</button><button class="btn lamp" data-a="w1">AGAINST wins +2</button><button class="btn ghost" data-a="flip">Flip again</button>`};
+  p.hot.forEach((_,i)=>paint(i));
+  el.querySelectorAll('.card').forEach(c=>c.onclick=e=>{const b=e.target.closest('[data-a]');if(!b)return;const i=+c.dataset.i,a=b.dataset.a;
+    if(a==='flip'){st.d[i]={f:Math.floor(Math.random()*T.length)};paint(i)}
+    else if(a==='tm')cTimer($('#tb'+i),60,'Go');
+    else{const d=st.d[i];const t=a==='w0'?d.f%T.length:(d.f+1)%T.length;const keep=S.act;S.act=t;award(2,'won the debate');S.act=keep;save();renderBar()}});
+}
+/* 3. Taboo Car */
+function rTaboo(p,el){
+  const st=cst(p);const w=p.vocab;
+  el.innerHTML=`<h3>Taboo Car</h3><p class="how">One player draws a word and explains it to the team without saying the word or any red word. 45 seconds. If the team guesses it, they score 2 points. Great for practising explaining in English.</p><div class="card"><div id="tabo"><div class="qtext">Draw a word to begin.</div></div><div class="btns"><button class="btn lamp" id="td">Draw a word</button></div></div>`;
+  $('#td').onclick=()=>{const v=w[pickNew(st,w.length)];const forb=[v.w,...String(v.syn||'').split(',').map(s=>s.trim()).filter(Boolean).slice(0,3)];
+    $('#tabo').innerHTML=`<div class="eyebrow">Explain this word</div><div class="bigtxt">${v.w}</div><div class="forb">${forb.map(f=>`<span class="pill">${f}</span>`).join('')}</div><div id="tt"></div><details><summary class="how">Meaning, for the person checking</summary><p><b>${v.me}.</b></p></details><div class="btns"><button class="btn lamp" id="tg">Guessed it: +2</button></div>`;
+    cTimer($('#tt'),45,'Start 45s');$('#tg').onclick=()=>{clearInterval(ctick);award(2,'guessed the word');nextTeam()}};
+}
+/* 4. Charades Car */
+function rCharades(p,el){
+  const st=cst(p);const m=p.moments;
+  el.innerHTML=`<h3>Charades Car</h3><p class="how">One player secretly reads a moment from the story and acts it out, no words, or draws it on the board. The rest of the group says which moment it is. The guessing team scores 2 points and the actor scores 1.</p><div class="card"><div id="ch"><div class="qtext">Draw a moment. Only the actor should look!</div></div><div class="btns"><button class="btn lamp" id="cd">Draw a moment</button></div></div>`;
+  $('#cd').onclick=()=>{const i=pickNew(st,m.length);const mode=Math.random()<.5?'Act it out (no words)':'Draw it (no words or letters)';
+    $('#ch').innerHTML=`<div class="eyebrow">${mode}</div><div class="bigtxt blur" id="cm" style="font-size:clamp(18px,3vw,28px)">${m[i]}</div><div class="btns"><button class="btn ghost" id="cs">Show to the actor</button><button class="btn lamp" id="cg">Guessed: +2</button><button class="btn ghost" id="ca">Actor +1</button></div><div id="ct0"></div>`;
+    cTimer($('#ct0'),90,'Start 90s');
+    $('#cs').onclick=()=>$('#cm').classList.toggle('blur');$('#cg').onclick=()=>{award(2,'guessed the moment');$('#cm').classList.remove('blur')};$('#ca').onclick=()=>award(1,'great acting')};
+}
+/* 5. Headline Car */
+const HSTYLES=['a newspaper headline (maximum 8 words)','a tweet (maximum 15 words, with one hashtag)','a text message from one character to another (maximum 12 words)','a movie trailer voice: one dramatic sentence','a weather forecast for the moment','a question sent to an advice column','a one-line review of the moment, out of five stars'];
+function rHeadline(p,el){
+  const st=cst(p);const m=p.moments;
+  el.innerHTML=`<h3>Headline Car</h3><p class="how">Draw a moment and a style. The team on turn says (or writes) the moment in that style, in English. The table decides if it is great, worth 2 points.</p><div class="card"><div id="hl"><div class="qtext">Draw a moment and a style.</div></div><div class="btns"><button class="btn lamp" id="hd">Draw</button></div></div>`;
+  $('#hd').onclick=()=>{const i=pickNew(st,m.length);const s=HSTYLES[Math.floor(Math.random()*HSTYLES.length)];
+    $('#hl').innerHTML=`<div class="eyebrow">The moment</div><p class="bigtxt" style="font-size:clamp(18px,3vw,28px)">${m[i]}</p><div class="eyebrow" style="margin-top:12px">Say it as</div><div class="qtext">${s}</div><div class="btns"><button class="btn lamp" id="hg">Great line: +2</button></div>`;
+    $('#hg').onclick=()=>{award(2,'great line');nextTeam()}};
+}
+/* 6. Gap Car: fill the gaps in a recap */
+const STOPW=new Set('which would about their there where while after before because through between another during without against around'.split(' '));
+function rCloze(p,el){
+  const st=cst(p);const si=st.si||0;const stop=p.stops[si];
+  const txt=stop.text;const re=/[A-Za-z’']+/g;let m,c=[];
+  while((m=re.exec(txt))){const w=m[0];if(w.length>=6&&w[0]===w[0].toLowerCase()&&!STOPW.has(w)&&!/['’]/.test(w))c.push({w,s:m.index})}
+  const step=Math.max(1,Math.floor(c.length/6));const pick=c.filter((_,i)=>i%step===0).slice(0,6);
+  let out='',last=0;pick.forEach((g,k)=>{out+=esc(txt.slice(last,g.s))+`<select data-k="${k}"><option value="">?</option>${shuffle(pick.map(x=>x.w)).map(w=>`<option>${w}</option>`).join('')}</select>`;last=g.s+g.w.length});out+=esc(txt.slice(last));
+  el.innerHTML=`<h3>Gap Car</h3><p class="how">A short recap with missing words. Choose the right word for each gap from the list, then check. The active team scores 1 point for each correct word. Read the finished text aloud, then ask the table the question.</p>
+  <div class="btns">${p.stops.map((s,i)=>`<button class="btn ${i===si?'lamp':'ghost'}" data-s="${i}">${s.title}</button>`).join('')}</div>
+  <div class="card"><div class="clz">${out}</div><div class="bank">${shuffle(pick.map(x=>x.w)).map(w=>`<span class="pill">${w}</span>`).join('')}</div><div class="btns"><button class="btn lamp" id="chk">Check</button></div><div class="ask" id="cka" style="display:none"><small>Ask the table</small>${stop.ask}</div></div>`;
+  el.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{st.si=+b.dataset.s;rCloze(p,el)});
+  $('#chk').onclick=()=>{let n=0;el.querySelectorAll('select').forEach(s=>{const ok=s.value===pick[+s.dataset.k].w;s.className=ok?'ok':'no';if(ok)n++});$('#cka').style.display='block';if(n){award(n,n+' of '+pick.length+' correct')}else toast('Try again')};
+}
+/* 7. Retell Car: paraphrase a quote */
+function rRetell(p,el){
+  const st=cst(p);const w=p.who;
+  el.innerHTML=`<h3>Retell Car</h3><p class="how">Draw a quote. The team on turn says the same idea in their own words, without using the red words. If the table understands it, that is 2 points. Then check who said it.</p><div class="card"><div id="rt"><div class="qtext">Draw a quote.</div></div><div class="btns"><button class="btn lamp" id="rd">Draw a quote</button></div></div>`;
+  $('#rd').onclick=()=>{const q=w[pickNew(st,w.length)];const words=[...new Set((q.q.match(/[A-Za-z’']{5,}/g)||[]))].sort((a,b)=>b.length-a.length).slice(0,2);
+    $('#rt').innerHTML=`<div class="eyebrow">Say it differently</div><div class="bigtxt" style="font-size:clamp(18px,3vw,30px);text-transform:none">“${q.q}”</div><div class="forb">${words.map(f=>`<span class="pill">${f}</span>`).join('')}</div><div class="btns"><button class="btn lamp" id="rg">Clear retelling: +2</button><button class="btn ghost" id="rs">Who said it?</button></div><div id="rr"></div>`;
+    $('#rg').onclick=()=>{award(2,'clear retelling');nextTeam()};$('#rs').onclick=()=>{$('#rr').innerHTML=`<div class="reveal"><p><b>${q.a}.</b> ${q.ctx}</p><div class="ask"><small>Discuss</small>${q.talk}</div></div>`}};
+}
+/* 8. Hot Seat Car */
+function rHotseat(p,el){
+  const st=cst(p);const chars=[...new Set(p.who.map(w=>w.a).filter(a=>!/^someone$/i.test(a)))];if(!chars.includes('Wilbur'))chars.unshift('Wilbur');
+  const starters=['Why did you…?','How did you feel when…?','What would you do differently?','Who can you trust?','What are you most afraid of?','What do you want most?'];
+  el.innerHTML=`<h3>Hot Seat Car</h3><p class="how">One student sits in the hot seat and answers as a character from this part. The others ask questions in English, using the starters or the questions below. Keep going for three minutes. The best question and the best answer each score 1 point.</p><div class="card"><div id="hs"><div class="qtext">Draw a character for the hot seat.</div></div><div class="btns"><button class="btn lamp" id="hd">Draw a character</button></div></div>
+  <div class="card"><div class="eyebrow">Question starters</div><div class="forb">${starters.map(s=>`<span class="pill" style="border-color:var(--line);color:inherit">${s}</span>`).join('')}</div><div class="eyebrow">Questions from the recap</div><ul class="alllist">${p.stops.map(s=>`<li><span>${s.ask}</span></li>`).join('')}</ul></div>`;
+  $('#hd').onclick=()=>{const c=chars[pickNew(st,chars.length)];
+    $('#hs').innerHTML=`<div class="eyebrow">In the hot seat</div><div class="bigtxt">${c}</div><div id="ht"></div><div class="btns"><button class="btn lamp" id="h1">Great question +1</button><button class="btn lamp" id="h2">Great answer +1</button></div>`;
+    cTimer($('#ht'),180,'Start 3 minutes');$('#h1').onclick=()=>award(1,'great question');$('#h2').onclick=()=>award(1,'great answer')};
+}
+const CARS={speed:rSpeed,debate:rDebate,taboo:rTaboo,charades:rCharades,headline:rHeadline,cloze:rCloze,paraphrase:rRetell,hotseat:rHotseat};
 let tick=null;
 function rTalk(p,el){
   const st=S.talk[p.id]||(S.talk[p.id]={used:[],cur:null,left:0});
