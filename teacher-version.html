@@ -395,13 +395,13 @@ const ins=(id,i,...t)=>{const p=P.find(x=>x.id===id);if(p&&!p.locked)p.moments.s
 const set=(id,i,t)=>{const p=P.find(x=>x.id===id);if(p&&!p.locked)p.moments[i]=t};
 const dec=(id,t)=>{const p=P.find(x=>x.id===id);if(p&&!p.locked)p.decoy=t};
 set(1,1,'On his gravel driveway, Wilbur says goodbye to his piano teacher, who tells him to take his time and go slow and steady.');
-ins(1,2,'Then the landline rings, and it is Maggie, whom he has not heard from in decades.');
+ins(1,2,'The landline rings, and it is Maggie, whom he has not heard from in decades.');
 set(2,4,'On Glossop Road he sees his mother Edith with a pram, and the baby inside it is himself.');
 ins(2,5,'Dougie comes downstairs with a toy train he took from Redgates, and then Mr Parkin knocks at the door.');
 set(3,4,'On the train, Wilbur sees the framed portrait of his teenage face, which ages in line with him.');
 ins(3,5,'He sees himself at Charlie Applewood’s, and later with a bloody nose for sticking up for Charlie at school.');
 ins(4,1,'The sixteen-year-old Wilbur crosses a busy road to the park, on his way to Charlie’s house.');
-ins(4,5,'Maggie dreams of Venice, they talk about chiaroscuro, and then the train sounds.');
+ins(4,6,'Maggie dreams of Venice, they talk about chiaroscuro, and then the train sounds.');
 ins(5,2,'Alice arrives before Wilbur can say more to Maggie, and back on the train Agnes warns: no meddling, no tinkering, no fiddling with time.');
 ins(6,3,'Dougie tells Wilbur to throw the knife by the pedals out of the window while the police car inches closer.');
 ins(7,3,'After Dougie’s death Wilbur avoids Ecclesall Road, and his life feels stuck, a kind of soul paralysis.');
@@ -433,6 +433,79 @@ dec(13,'Maggie tells Wilbur she is staying in London for the IPO.');
 dec(14,'Nora tells Wilbur he plays terribly and should stop.');
 dec(15,'The Ghost stays on the train while Agnes steps out first.');
 dec(16,'Wilbur sells the shop and opens a hundred more.');
+/* standard size: 4 real moments + 1 extra card */
+const KEEP={1:[0,2,3,5],2:[0,2,4,5],3:[1,2,3,5],4:[0,2,4,5],5:[0,1,3,5],6:[0,2,4,5],7:[0,1,4,5],8:[1,2,4,5],9:[0,1,3,5],10:[0,2,4,5],11:[0,1,4,5],12:[0,1,4,5],13:[0,2,4,5],14:[0,1,4,5],15:[1,2,3,5],16:[0,1,3,5]};
+P.forEach(p=>{const k=KEEP[p.id];if(k&&!p.locked)p.moments=k.map(i=>p.moments[i])});
+})();
+/* Grammar Car: four fix-it questions per part, correct answer listed first */
+(function(){
+const G={
+1:[['When the phone rang, Wilbur ____ on his driveway for ten minutes.',['had been standing','has been standing','had been stood','was be standing']],
+   ['He was tired because he ____ the piano all evening.',['had been playing','has been playing','had been played','was be playing']],
+   ['How long ____ lessons before Maggie called?',['had Wilbur been having','has Wilbur been having','did Wilbur been having','was Wilbur having been']],
+   ['Maggie’s hands were cold because she ____ in the garden.',['had been working','has been working','had been work','was been working']]],
+2:[['On the train you ____ speak to your younger self. It is against the rules.',['mustn’t','don’t have to','doesn’t must','must to']],
+   ['Agnes says you ____ get back on when you hear the train.',['must','mustn’t','don’t have to','must to']],
+   ['You ____ bring a ticket to the club. We have spare ones.',['don’t have to','mustn’t','haven’t to','doesn’t have']],
+   ['Passengers ____ open the doors while the train is moving. It is dangerous.',['mustn’t','don’t have to','doesn’t have to','haven’t to']]],
+3:[['Young Wilbur did not know that he ____ marry Maggie.',['would','will','is going to','does']],
+   ['At thirteen, he could not imagine that Charlie ____ later work for him.',['would','will','is','can']],
+   ['In 1953 nobody knew how long the Queen ____ reign.',['would','will','is','does']],
+   ['She promised she ____ call him later.',['would','will','is going','calls']]],
+4:[['Wilbur ____ a bike when he was a boy.',['used to have','would have','uses to have','used have']],
+   ['Every Saturday he ____ to the park to watch the people.',['would walk','used walk','use to walk','is used to walk']],
+   ['Choose the correct sentence.',['I used to have a lot of free time, but now I am busy.','I would have a lot of free time, but now I am busy.','I am used to have a lot of free time, but now I am busy.','I use to have a lot of free time, but now I am busy.']],
+   ['When we were small, we ____ visit our grandmother every Sunday.',['would','used','are used to','use']]],
+5:[['Alice was a year ____ than Wilbur.',['older','more old','oldest','as old']],
+   ['Wilbur was not ____ tall as Dougie.',['as','than','so than','more']],
+   ['Dougie was six years ____ than Wilbur.',['older','elder','oldest','more older']],
+   ['My brother is ____ taller than me. Nearly twenty centimetres.',['much','very','most','too']]],
+6:[['By the time the police arrived, the car ____ already left.',['had','has','was','is']],
+   ['I was nervous because I ____ never been to a concert.',['had','have','was','did']],
+   ['When we got to the cinema, the film ____ already started.',['had','has','was','is']],
+   ['Wilbur ____ his brother before the fight turned into chaos.',['had restrained','has restrained','was restraining','had restrain']]],
+7:[['He was late ____ his mam was ill.',['because','because of','although','but']],
+   ['He was late ____ his mam’s illness.',['because of','because','so','although']],
+   ['His mam was ill, ____ he was late.',['so','because','because of','although']],
+   ['____ it was Friday, the shop was busy.',['As','Because of','So','But']]],
+8:[['If the track switched, Wilbur ____ disappear.',['would','will','would have','had']],
+   ['If he ____ switched track, he would never have reached eternity.',['had','would','has','will']],
+   ['If I were you, I ____ not change anything.',['would','will','had','did']],
+   ['If Maggie had not moved to London, they ____ together sooner.',['would have been','would be','will be','had been']]],
+9:[['Have you ____ been to Venice?',['ever','never','yet','already']],
+   ['I ____ never seen such a beautiful bridge.',['have','am','did','was']],
+   ['She ____ visited Italy three times.',['has','have','is','did']],
+   ['____ you ever played the piano?',['Have','Has','Are','Do']]],
+10:[['If you heat ice, it ____.',['melts','melt','is melt','melting']],
+   ['If it rains tomorrow, we ____ stay at home.',['will','would','are','had']],
+   ['If you ____ too much, you will be tired tomorrow.',['work','will work','worked','would work']],
+   ['Water ____ when it reaches 100 degrees.',['boils','will boil','is boiling','boiled']]],
+11:[['I ____ called my mother more often.',['should have','should','must have','should had']],
+   ['He should have ____ to the wedding.',['gone','went','go','going']],
+   ['We did not listen. We ____ listened. Now it is too late.',['should have','should','must','would']],
+   ['She shouldn’t have ____ so late.',['arrived','arrive','arriving','arrives']]],
+12:[['It was ____ late to change anything.',['too','very','so','enough']],
+   ['The tea was ____ hot to drink.',['too','very','so','enough']],
+   ['He was too tired ____ the letter.',['to read','reading','read','for read']],
+   ['She is not old ____ to drive.',['enough','too','very','so']]],
+13:[['I wish I ____ more time.',['had','have','would have','will have']],
+   ['He wishes he ____ taller.',['were','is','will be','would be']],
+   ['She wishes she ____ in a quieter city.',['lived','lives','would live','has lived']],
+   ['If only I ____ better at maths.',['were','am','will be','have been']]],
+14:[['The thing ____ love is that it can feel eternal.',['with','in','for','at']],
+   ['The thing with money is ____ it never feels like enough.',['that','what','which','who']],
+   ['Choose the correct sentence.',['The thing with this book is that it jumps between times.','The thing for this book is that it jumps between times.','The thing with this book are that it jumps between times.','The thing with this book that it jumps between times.']],
+   ['The thing with time is that it ____ faster as you get older.',['goes','go','going','gone']]],
+15:[['You ____ go first.',['need to','needs to','must to','needing to']],
+   ['I ____ go now, or I will miss the train.',['have got to','have get to','has got to','am got to']],
+   ['You ____ come tomorrow. It is optional.',['don’t have to','mustn’t','haven’t to','needn’t to']],
+   ['She ____ finish the report today. The boss needs it by five.',['has to','have to','has got','is have to']]],
+16:[['If I take this offer, you ____ be unhappy.',['will','would','are','had']],
+   ['If it ____ tomorrow, we will stay in.',['rains','will rain','rained','would rain']],
+   ['I will call you if I ____ time.',['have','will have','had','would have']],
+   ['If we ____ the shop, we will lose each other.',['expand','will expand','expanded','would expand']]]
+};
+P.forEach(p=>{const g=G[p.id];if(g&&!p.locked)p.gq=g.map(x=>({q:x[0],o:x[1]}))});
 })();
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -456,7 +529,9 @@ function renderBoard(){
   '';
   $('#board').onclick=e=>{const b=e.target.closest('[data-p]');if(!b)return;S.part=+b.dataset.p;S.tab='windows';renderBoard();renderPart();$('#part').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'})};
 }
-const tabsFor=p=>TABS.map(t=>p.car&&t[0]===p.car.slot?['car',p.car.name]:t);
+const tabsFor=p=>{const late=p.car&&['taboo','cloze'].includes(p.car.id);let t=TABS.map(x=>p.car&&x[0]===p.car.slot?(late?null:['car',p.car.name]):x).filter(Boolean);
+  if(late)t.splice(t.findIndex(x=>x[0]==='words')+1,0,['car',p.car.name]);
+  if(p.gq&&p.gq.length)t.splice(t.findIndex(x=>x[0]==='quiz'),0,['gram','Grammar Car']);return t};
 function renderPart(){
   const p=cur(),el=$('#part');
   if(p.locked){el.innerHTML=`<div class="part-head"><div><div class="eyebrow">Part ${p.id}</div><h2>Coming soon</h2></div></div><div class="shield" style="margin-top:18px;border-color:var(--lamp)"><h3>This train is coming soon</h3><p>Keep up with your nice reading work. This part will be boarding before you know it.</p><button class="btn lamp" id="back1">Back to Part 1</button></div>`;
@@ -469,7 +544,7 @@ function renderPart(){
   <div class="tabs" role="tablist">${tabsFor(p).map(t=>`<button class="tab" role="tab" aria-selected="${S.tab===t[0]}" data-t="${t[0]}">${t[1]}</button>`).join('')}</div>${body}`;
   el.querySelector('.tabs').onclick=e=>{const b=e.target.closest('[data-t]');if(!b)return;S.tab=b.dataset.t;renderPart()};
   const rv=$('#rv');if(rv)rv.onclick=()=>{S.reveal[p.id]=1;renderPart()};
-  if($('#panel')){clearInterval(ctick);if(!tabsFor(p).some(t=>t[0]===S.tab))S.tab='windows';({windows:rWindows,quotes:rQuotes,talk:rTalk,words:rWords,quiz:rQuiz,car:(q,x)=>CARS[q.car.id](q,x)})[S.tab](p,$('#panel'))}
+  if($('#panel')){clearInterval(ctick);if(!tabsFor(p).some(t=>t[0]===S.tab))S.tab='windows';({windows:rWindows,quotes:rQuotes,talk:rTalk,words:rWords,quiz:rQuiz,gram:rGramCar,car:(q,x)=>CARS[q.car.id](q,x)})[S.tab](p,$('#panel'))}
 }
 /* progress dots */
 const prog=(n,i,res)=>`<div class="prog">${Array.from({length:n},(_,k)=>`<i class="${res[k]===1?'ok':(k===i?'on':'')}"></i>`).join('')}</div>`;
@@ -585,9 +660,10 @@ function rDebate(p,el){
 /* 3. Taboo Car */
 function rTaboo(p,el){
   const st=cst(p);const w=p.vocab;
-  el.innerHTML=`<h3>Taboo Car</h3><p class="how">One player draws a word and explains it to the team without saying the word or any red word. 45 seconds. If the team guesses it, they score 2 points. Great for practising explaining in English.</p><div class="card"><div id="tabo"><div class="qtext">Draw a word to begin.</div></div><div class="btns"><button class="btn lamp" id="td">Draw a word</button></div></div>`;
+  el.innerHTML=`<h3>Taboo Car</h3><p class="how">One player draws a word and explains it to the team without saying the word or any red word. The word starts hidden: show it to the player who explains, then press Hide before the team looks at the screen. 45 seconds. If the team guesses it, they score 2 points. Great for practising explaining in English.</p><div class="card"><div id="tabo"><div class="qtext">Draw a word to begin.</div></div><div class="btns"><button class="btn lamp" id="td">Draw a word</button></div></div>`;
   $('#td').onclick=()=>{const v=w[pickNew(st,w.length)];const forb=[v.w,...String(v.syn||'').split(',').map(s=>s.trim()).filter(Boolean).slice(0,3)];
-    $('#tabo').innerHTML=`<div class="eyebrow">Explain this word</div><div class="bigtxt">${v.w}</div><div class="forb">${forb.map(f=>`<span class="pill">${f}</span>`).join('')}</div><div id="tt"></div><details><summary class="how">Meaning, for the person checking</summary><p><b>${v.me}.</b></p></details><div class="btns"><button class="btn lamp" id="tg">Guessed it: +2</button></div>`;
+    $('#tabo').innerHTML=`<div class="eyebrow">Explain this word</div><div id="tw" class="blur"><div class="bigtxt">${v.w}</div><div class="forb">${forb.map(f=>`<span class="pill">${f}</span>`).join('')}</div></div><div class="btns"><button class="btn ghost" id="tv" aria-pressed="false">Show word</button></div><div id="tt"></div><details><summary class="how">Meaning, for the person checking</summary><p><b>${v.me}.</b></p></details><div class="btns"><button class="btn lamp" id="tg">Guessed it: +2</button></div>`;
+    $('#tv').onclick=()=>{const h=$('#tw').classList.toggle('blur');$('#tv').textContent=h?'Show word':'Hide word';$('#tv').setAttribute('aria-pressed',h?'false':'true')};
     cTimer($('#tt'),45,'Start 45s');$('#tg').onclick=()=>{clearInterval(ctick);award(2,'guessed the word');nextTeam()}};
 }
 /* 4. Charades Car */
@@ -646,6 +722,15 @@ function rHotseat(p,el){
     cTimer($('#ht'),180,'Start 3 minutes');$('#h1').onclick=()=>award(1,'great question');$('#h2').onclick=()=>award(1,'great answer')};
 }
 const CARS={speed:rSpeed,debate:rDebate,taboo:rTaboo,charades:rCharades,headline:rHeadline,cloze:rCloze,paraphrase:rRetell,hotseat:rHotseat};
+
+const GQS={};
+function rGramCar(p,el){
+  const st=GQS[p.id]||(GQS[p.id]={});const g=p.gram;
+  mcq(el,st,()=>shuffle(p.gq).map(it=>{const right=it.o[0];const x=pickOpts(it.o,right);const full=it.q.includes('____')?it.q.replace('____','<b>'+right+'</b>'):'';
+    return{q:it.q.replace('____','<span class="gap">&nbsp;______&nbsp;</span>'),cls:'wide',o:x.o,a:x.a,rev:(full?`<p>${full}</p>`:`<p><b>${right}</b></p>`)+`<div class="ask"><small>Rule</small>${g.rule}</div>`}}),2,
+   (s,n)=>({eyebrow:'Grammar Car cleared',line:s===n?'Perfect grammar. The conductor is impressed.':s>=n/2?'Good. Reread the rule and try again.':'Tricky! Read the rule on this card, then play again.'}),
+   `<h3>Grammar Car</h3><p class="how"><b>${g.h}.</b> ${g.rule} Read the sentence aloud and the active team picks the correct form. Each right answer is worth 2 points, and the ticket passes to the next team.</p>`);
+}
 let tick=null;
 function rTalk(p,el){
   const st=S.talk[p.id]||(S.talk[p.id]={used:[],cur:null,left:0});
