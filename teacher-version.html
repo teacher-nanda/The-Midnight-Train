@@ -389,6 +389,51 @@ p6.quiz=[
  {q:'What does Dougie do in the fight?',o:['Runs away at once','Pulls a knife','Calls the police','Hides'],a:1,e:'He pulls a knife from his pocket and flicks the blade.'}
 ];
 })();
+/* Story puzzle: six real moments per part plus one extra decoy card that does not belong */
+(function(){
+const ins=(id,i,...t)=>{const p=P.find(x=>x.id===id);if(p&&!p.locked)p.moments.splice(i,0,...t)};
+const set=(id,i,t)=>{const p=P.find(x=>x.id===id);if(p&&!p.locked)p.moments[i]=t};
+const dec=(id,t)=>{const p=P.find(x=>x.id===id);if(p&&!p.locked)p.decoy=t};
+set(1,1,'On his gravel driveway, Wilbur says goodbye to his piano teacher, who tells him to take his time and go slow and steady.');
+ins(1,2,'Then the landline rings, and it is Maggie, whom he has not heard from in decades.');
+set(2,4,'On Glossop Road he sees his mother Edith with a pram, and the baby inside it is himself.');
+ins(2,5,'Dougie comes downstairs with a toy train he took from Redgates, and then Mr Parkin knocks at the door.');
+set(3,4,'On the train, Wilbur sees the framed portrait of his teenage face, which ages in line with him.');
+ins(3,5,'He sees himself at Charlie Applewood’s, and later with a bloody nose for sticking up for Charlie at school.');
+ins(4,1,'The sixteen-year-old Wilbur crosses a busy road to the park, on his way to Charlie’s house.');
+ins(4,5,'Maggie dreams of Venice, they talk about chiaroscuro, and then the train sounds.');
+ins(5,2,'Alice arrives before Wilbur can say more to Maggie, and back on the train Agnes warns: no meddling, no tinkering, no fiddling with time.');
+ins(6,3,'Dougie tells Wilbur to throw the knife by the pedals out of the window while the police car inches closer.');
+ins(7,3,'After Dougie’s death Wilbur avoids Ecclesall Road, and his life feels stuck, a kind of soul paralysis.');
+ins(8,1,'On New Year’s Eve 1969, Maggie, caught in a snowstorm, knocks on Wilbur’s door and needs shelter.');
+ins(9,4,'On the terrace of D’Angelo Caffè in Venice, the newlyweds laugh and talk about everything and nothing.');
+ins(10,3,'Wilbur studies his account book late at night while Maggie sleeps.');
+set(11,1,'Edith announces that she is going to marry their old landlord, Cecil Parkin.');
+ins(11,2,'She says Parkin always was a gentleman who paid for Dougie’s funeral, and Wilbur calls the idea ridiculous.');
+ins(12,2,'The Ghost admits he found it easier to be away than at home, because love hurt and business was an addiction.');
+set(13,3,'Maggie says she is just a woman who makes macaroni cheese for one till the rest of time.');
+ins(13,4,'She writes a letter and catches a train north, with more bags than she can carry.');
+ins(14,1,'They talk about Maggie’s letter and agree that, in trying to prove himself, Wilbur forgot to be himself.');
+set(15,3,'Agnes tells the Ghost he must go first, so that Wilbur can wake up without him.');
+ins(15,4,'He opens the door onto nothing, and after a moment of stillness the Midnight Train begins to move.');
+ins(16,4,'He asks Maggie to tell him if he starts to lose “this me”, and never to let him sack poor old Charlie.');
+dec(1,'Maggie’s letter is found complete, every page of it, on top of the piano.');
+dec(2,'Agnes tells Wilbur he may speak to his younger self whenever he likes.');
+dec(3,'Wilbur buys The Old Man and the Sea with his own pocket money.');
+dec(4,'Victor Willows refuses Wilbur’s money and walks away angry.');
+dec(5,'Alice leaves Wilbur because he is going to Oxford.');
+dec(6,'The brothers get away safely and spend the night at their mam’s house.');
+dec(7,'Wilbur’s mam leaves Middlewood Hospital after one week.');
+dec(8,'Maggie decides to stay in London for good.');
+dec(9,'Wilbur proposes to Maggie on a train platform.');
+dec(10,'The Ghost climbs back on the train at once and leaves Venice.');
+dec(11,'Edith announces that she is going to marry Mr Bagdale.');
+dec(12,'Wilbur is at home beside Maggie when she loses the baby.');
+dec(13,'Maggie tells Wilbur she is staying in London for the IPO.');
+dec(14,'Nora tells Wilbur he plays terribly and should stop.');
+dec(15,'The Ghost stays on the train while Agnes steps out first.');
+dec(16,'Wilbur sells the shop and opens a hundred more.');
+})();
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
@@ -430,19 +475,21 @@ function renderPart(){
 const prog=(n,i,res)=>`<div class="prog">${Array.from({length:n},(_,k)=>`<i class="${res[k]===1?'ok':(k===i?'on':'')}"></i>`).join('')}</div>`;
 
 function rWindows(p,el){
-  const g=S.sort[p.id]||(S.sort[p.id]={order:shuffle(p.moments.map((_,i)=>i)),next:0});
+  const N=p.moments.length,all=p.decoy?p.moments.concat([p.decoy]):p.moments.slice();
+  const g=S.sort[p.id]&&S.sort[p.id].n===N?S.sort[p.id]:(S.sort[p.id]={n:N,order:shuffle(all.map((_,i)=>i)),next:0});
   el.innerHTML=`<h3>Windows: the recap</h3><p class="how">Each stop is a window on Wilbur's life, in the order the train passes them. Open one, read it aloud, then ask the table the question underneath.</p>
   <ol class="rail">${p.stops.map(s=>`<li class="stop"><div class="dot"><i></i><s></s></div><details><summary><span class="pill lamp">${s.when}</span><b>${s.title}</b><span class="pill">${s.pg}</span></summary><div class="body"><p>${s.text}</p><div class="ask"><small>Ask the table</small>${s.ask}</div></div></details></li>`).join('')}</ol>
-  <div class="card sortbox"><h3>Story puzzle</h3><p class="how">Five key moments, shuffled. Tap them in the order they happen in the book. Each right card jumps to the front with a green outline and a number, so the whole story builds up on one screen. The active team scores 1 point per card and 3 for finishing.</p>
+  <div class="card sortbox"><h3>Story puzzle</h3><p class="how">${p.moments.length} moments from this part are shuffled, and <b>one extra card does not belong</b>. Tap the moments in the order they happen in the book. Each right card jumps to the front with a green outline and a number. Every right card scores 1 point for the active team.</p>
   <ol class="pz" id="pz"></ol><div class="btns"><button class="btn ghost" id="srst">Shuffle again</button></div></div>`;
   const draw=()=>{
-    const placed=p.moments.map((m,i)=>i).filter(i=>i<g.next),rest=g.order.filter(i=>i>=g.next);
-    $('#pz').innerHTML=placed.map(i=>`<li class="pc ok" data-n="${i+1}"><span class="num">${i+1}</span>${p.moments[i]}</li>`).join('')+rest.map(i=>`<li><button class="pc" data-i="${i}">${p.moments[i]}</button></li>`).join('');
+    const placed=all.map((m,i)=>i).filter(i=>i<g.next&&i<N),rest=g.order.filter(i=>i>=g.next);
+    const done=g.next>=N;
+    $('#pz').innerHTML=placed.map(i=>`<li class="pc ok"><span class="num">${i+1}</span>${all[i]}</li>`).join('')+rest.map(i=>done?`<li class="pc extra"><span class="num">×</span>${all[i]}<em> The extra card: this did not happen in this part.</em></li>`:`<li><button class="pc" data-i="${i}">${all[i]}</button></li>`).join('');
   };
   draw();
   $('#pz').onclick=e=>{const b=e.target.closest('[data-i]');if(!b)return;const i=+b.dataset.i;
-    if(i===g.next){g.next++;award(g.next===p.moments.length?3:1,g.next===p.moments.length?'story complete':'piece in place');draw()}
-    else{b.classList.add('bad');toast('Not the next moment yet');setTimeout(()=>b.classList.remove('bad'),350)}};
+    if(i===g.next&&i<N){g.next++;award(1,'piece in place');draw();if(g.next>=N)toast('Story complete')}
+    else{b.classList.add('bad');toast(i>=N?'That card does not belong in this part':'Not the next moment yet');setTimeout(()=>b.classList.remove('bad'),350)}};
   $('#srst').onclick=()=>{delete S.sort[p.id];rWindows(p,el)};
 }
 function mcq(el,st,mk,pts,endFn,head){
@@ -502,7 +549,7 @@ function rWords(p,el){
 const CARMAP={2:['charades','talk'],3:['speed','quotes'],4:['debate','talk'],5:['taboo','quotes'],6:['charades','talk'],7:['headline','quotes'],8:['hotseat','talk'],9:['cloze','quotes'],10:['debate','talk'],11:['paraphrase','quotes'],12:['speed','talk'],13:['hotseat','quotes'],14:['taboo','talk'],15:['cloze','quotes'],16:['headline','talk']};
 const CARNAME={speed:'Speed Car',debate:'Debate Car',taboo:'Taboo Car',charades:'Charades Car',headline:'Headline Car',hotseat:'Hot Seat Car',cloze:'Gap Car',paraphrase:'Retell Car'};
 P.forEach(p=>{if(p.locked)return;if(p.id>=3&&p.talk)p.talk=p.talk.slice(0,4);const m=CARMAP[p.id];if(m)p.car={id:m[0],name:CARNAME[m[0]],slot:m[1]}});
-(()=>{const s=document.createElement('style');s.textContent=`.pz{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:10px}.pz li{display:flex}.pz .pc{flex:1;text-align:left;border:1.5px solid var(--ink);background:var(--surface,transparent);color:inherit;border-radius:10px;padding:12px 14px;font:inherit;font-size:15px;line-height:1.4;cursor:pointer}.pz .pc:hover{background:var(--tint)}.pz .pc.bad{border-color:var(--bad);animation:shake .3s}.pz li.pc.ok{flex:1;border:2.5px solid var(--ok);background:var(--tint);cursor:default;align-items:flex-start;gap:10px}.pz .num{flex:none;display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--ok);color:#fff;font-family:var(--f-type);font-size:14px}@media(prefers-reduced-motion:reduce){.pz .pc.bad{animation:none}}.bx{display:grid;gap:14px;margin-top:14px}.bigtxt{font-family:var(--f-display);font-size:clamp(24px,4.4vw,44px);line-height:1.15;font-weight:600;text-transform:uppercase;letter-spacing:.02em}.sidebox{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}.sidebox>div{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--card,transparent)}.sidebox b{display:block;font-family:var(--f-display);font-size:22px;text-transform:uppercase}.forb{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.forb .pill{border-color:#C75B4F;color:#C75B4F}.clz{line-height:2.1;font-size:18px}.clz select{font:inherit;max-width:100%;padding:2px 6px;border-radius:8px;border:1px solid var(--line);background:var(--bg,#fff);color:inherit}.clz select.ok{border-color:#3E8E5A;background:#3E8E5A22}.clz select.no{border-color:#C75B4F;background:#C75B4F22}.bank{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.blur{filter:blur(9px);user-select:none}.tbig{font-family:var(--f-type);font-size:34px;letter-spacing:.06em}`;document.head.appendChild(s)})();
+(()=>{const s=document.createElement('style');s.textContent=`.pz{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:10px}.pz li{display:flex}.pz .pc{flex:1;text-align:left;border:1.5px solid var(--ink);background:var(--surface,transparent);color:inherit;border-radius:10px;padding:12px 14px;font:inherit;font-size:15px;line-height:1.4;cursor:pointer}.pz .pc:hover{background:var(--tint)}.pz .pc.bad{border-color:var(--bad);animation:shake .3s}.pz li.pc.ok{flex:1;border:2.5px solid var(--ok);background:var(--tint);cursor:default;align-items:flex-start;gap:10px}.pz li.pc.extra{flex:1;border:2px dashed var(--muted);background:none;color:var(--muted);align-items:flex-start;gap:10px;display:block;padding:12px 14px}.pz li.pc.extra .num{background:var(--muted);margin-right:10px;vertical-align:top}.pz li.pc.extra em{display:block;font-size:13px;margin-top:4px}.pz .num{flex:none;display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--ok);color:#fff;font-family:var(--f-type);font-size:14px}@media(prefers-reduced-motion:reduce){.pz .pc.bad{animation:none}}.bx{display:grid;gap:14px;margin-top:14px}.bigtxt{font-family:var(--f-display);font-size:clamp(24px,4.4vw,44px);line-height:1.15;font-weight:600;text-transform:uppercase;letter-spacing:.02em}.sidebox{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}.sidebox>div{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--card,transparent)}.sidebox b{display:block;font-family:var(--f-display);font-size:22px;text-transform:uppercase}.forb{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.forb .pill{border-color:#C75B4F;color:#C75B4F}.clz{line-height:2.1;font-size:18px}.clz select{font:inherit;max-width:100%;padding:2px 6px;border-radius:8px;border:1px solid var(--line);background:var(--bg,#fff);color:inherit}.clz select.ok{border-color:#3E8E5A;background:#3E8E5A22}.clz select.no{border-color:#C75B4F;background:#C75B4F22}.bank{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.blur{filter:blur(9px);user-select:none}.tbig{font-family:var(--f-type);font-size:34px;letter-spacing:.06em}`;document.head.appendChild(s)})();
 let ctick=null;
 function cTimer(box,secs,label){
   clearInterval(ctick);let left=secs;const fmt=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
@@ -548,14 +595,14 @@ function rCharades(p,el){
   const st=cst(p);const S2=p.stops;st.done=st.done||{};
   const first=t=>(t.match(/^.*?[.!?](?=\s|$)/)||[t])[0];
   const board=()=>`<div class="eyebrow">The guessing board: everyone can see it</div><ul class="alllist">${S2.map((s,i)=>`<li class="${st.done[i]?'used':''}"><b>${esc(s.title)}</b></li>`).join('')}</ul>`;
-  el.innerHTML=`<h3>Charades Car</h3><p class="how">One player acts out a scene from this part, no words. Act, mime or draw: whatever works. The scene titles are on the board, so the group only has to pick the right one. The guessing team scores 2 points and the actor scores 1.</p><div class="deck"><div class="card"><div id="ch"><div class="qtext">Draw a scene. Only the actor should look!</div></div><div class="btns"><button class="btn lamp" id="cd">Draw a scene</button></div></div><div class="card" id="cb"></div></div>`;
+  el.innerHTML=`<h3>Charades Car</h3><p class="how">One player acts out a scene from this part, no words. Act, mime or draw: whatever works. The scene titles are on the board, so the group only has to pick the right one. The guessing team scores 2 points and so does the actor.</p><div class="deck"><div class="card"><div id="ch"><div class="qtext">Draw a scene. Only the actor should look!</div></div><div class="btns"><button class="btn lamp" id="cd">Draw a scene</button></div></div><div class="card" id="cb"></div></div>`;
   const drawB=()=>$('#cb').innerHTML=board();drawB();
   $('#cd').onclick=()=>{const left=S2.map((_,i)=>i).filter(i=>!st.done[i]);if(!left.length){st.done={};return rCharades(p,el)}
     const i=left[Math.floor(Math.random()*left.length)];
-    $('#ch').innerHTML=`<div class="eyebrow">Actor: act this scene. Start with one simple action, like walking, reading or looking out of a window.</div><div class="bigtxt blur" id="cm" style="font-size:clamp(18px,3vw,28px)"><b>${esc(S2[i].title)}</b><br><span style="font-size:.75em">${esc(first(S2[i].text))}</span></div><div class="btns"><button class="btn ghost" id="cs">Show to the actor</button><button class="btn lamp" id="cg">Guessed: +2</button><button class="btn ghost" id="ca">Actor +1</button></div><div id="ct0"></div>`;
+    $('#ch').innerHTML=`<div class="eyebrow">Actor: act this scene. Start with one simple action, like walking, reading or looking out of a window.</div><div class="bigtxt blur" id="cm" style="font-size:clamp(18px,3vw,28px)"><b>${esc(S2[i].title)}</b><br><span style="font-size:.75em">${esc(first(S2[i].text))}</span></div><div class="btns"><button class="btn ghost" id="cs">Show to the actor</button><button class="btn lamp" id="cg">Guessed: +2</button><button class="btn ghost" id="ca">Actor +2</button></div><div id="ct0"></div>`;
     cTimer($('#ct0'),90,'Start 90s');
     $('#cs').onclick=()=>$('#cm').classList.toggle('blur');
-    $('#cg').onclick=()=>{award(2,'guessed the scene');st.done[i]=1;$('#cm').classList.remove('blur');drawB()};$('#ca').onclick=()=>award(1,'great acting')};
+    $('#cg').onclick=()=>{award(2,'guessed the scene');st.done[i]=1;$('#cm').classList.remove('blur');drawB()};$('#ca').onclick=()=>award(2,'great acting')};
 }
 /* 5. Headline Car */
 const HSTYLES=['a newspaper headline (maximum 8 words)','a tweet (maximum 15 words, with one hashtag)','a text message from one character to another (maximum 12 words)','a movie trailer voice: one dramatic sentence','a weather forecast for the moment','a question sent to an advice column','a one-line review of the moment, out of five stars'];
