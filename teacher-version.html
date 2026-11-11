@@ -330,7 +330,7 @@ p5.pages='“The Blink of an Eye” to “27 July 1964”';
 p5.stops.push(
  {when:'In the carriage',title:'“I can’t face this”',pg:'Miss Graham’s Last Lesson → A Feeling of Intense Discomfort',text:'The Ghost is very nearly at the night that changed everything. He says he does not want to stop there, and that he will just stay on the carriage because he has all the time in the world. Then comes a feeling of intense discomfort, an intense claustrophobia, a stuckness. “I can’t face this.” The answer is that now he has to.',ask:'What would you stay on the train to avoid?'},
  {when:'27 July 1964',title:'The concert',pg:'27 July 1964',text:'It is the summer before Wilbur is due to start Oxford. The Rolling Stones are doing a Chuck Berry song on stage, and Wilbur and Dougie are right in the middle of the crowd. Wilbur had wanted to see the band and talked Dougie into going. Dougie has just spent six weeks in prison, after being convicted of selling batches of stolen knives and forks while working at Viners’ cutlery factory. He shouts in his brother’s ear that Wilbur does not need Oxford, his duffel coat or his Shakespeare. Wilbur shouts back that he is not going to Oxford for the scene, but to get a degree.',ask:'Is Dougie jealous, afraid, or just honest?'},
- {when:'In the crowd',title:'The moment it went wrong',pg:'27 July 1964',text:'Someone taps Wilbur on the shoulder: Maggie, with two of her friends. She tells him she is doing teacher-training in Broomhall because she wants to teach little ones, but he cannot hear her. Dougie leans in with more inappropriateness, and Maggie’s eyes flash with anger and embarrassment while Wilbur feels the familiar shame about Dougie. When the song ends to wild applause and screams, they can finally speak while the instruments are tuned. Maggie says, “Actually, yes. Yes. I am with someone.” A man in a shirt and tie comes up and puts his arm around her: Tommy Hetherington, from the year above at Wilbur’s school, tall, with Brylcreemed black hair, more a wannabe Elvis than a Jagger. “Him?” says Dougie, acting disgusted. Maggie looks disgusted too: “No bloody way.” And to Tommy: “Get off.” The Ghost notes it: the moment it all went wrong, when things pivoted towards chaos. Wilbur shouts at Tommy to get off her or get a lamping, and the Ghost realises that, so ready for violence, his young self is not so different from Dougie. Then Tommy knocks Dougie.',ask:'At which exact moment did it all go wrong?'}
+ {when:'In the crowd',title:'The moment it went wrong',pg:'27 July 1964',text:'Maggie taps Wilbur on the shoulder, and when the song ends she says, “Actually, yes. Yes. I am with someone.” Tommy Hetherington, a boy from the year above at Wilbur’s school, puts his arm around her. Dougie sneers, “Him?”, but Maggie says, “No bloody way,” and tells Tommy to get off. The Ghost notes the moment it all went wrong. Wilbur shouts at Tommy to get off her or get a lamping, and the Ghost sees that his young self is not so different from Dougie. Then Tommy knocks Dougie.',ask:'At which exact moment did it all go wrong?'}
 );
 p5.who=[
  W('Success is just the distance you travel from where you started.','Miss Graham',['Agnes','Maggie','Alice'],'The ghost teacher on the train (chapter “Miss Graham’s Last Lesson”).','Is that a good definition of success? What did Wilbur ask back?'),
@@ -598,12 +598,12 @@ function rQuiz(p,el){
    `<h3>Conductor’s quiz</h3><p class="how">${p.quiz.length} questions on ${p.pages}. Right answers score 3 points for the active team.</p>`);
 }
 function rWords(p,el){
-  el.innerHTML=`<h3>Word Car</h3><p class="how">Read the sentence and guess what the word means from the context. Read the word aloud, and the team on turn says what it means or gives a similar word. Tap the card to check the definition and the accepted similar words, then give the point. Words with a lamp badge are the ones Nanda flagged in her notes.</p>
+  el.innerHTML=`<h3>Word Car</h3><p class="how">Read the sentence and guess what the word means from the context. Read the word aloud, and the team on turn says what it means or gives a similar word. Tap the card to check the definition and the accepted similar words, then give the point. Words with a lamp badge were flagged in the teacher’s notes.</p>
   <div class="cards">${p.vocab.map((v,i)=>`<div class="vc" role="button" tabindex="0" aria-expanded="false" data-v="${i}"><div class="front">${v.mine?'<span class="pill lamp" style="width:fit-content">From your notes</span>':'<span class="pill" style="width:fit-content">From the book</span>'}<div class="word">${v.w}</div><p class="cx">${v.cx}</p><div class="hint">Read it aloud. Team guesses the meaning or a similar word. Then tap.</div></div>
   <div class="back"><div class="word">${v.w}</div><div class="pron">${v.pr} \u00b7 ${v.pos}</div><div><b>${v.me}.</b></div><div class="acc"><span class="hint">Accept similar words like</span>${v.syn}</div><div class="act"><button class="btn lamp" data-give="${i}">Similar word: +1 point</button><button class="btn ghost" data-pass="${i}">Not quite</button></div><div class="ex"><span class="hint">Other ways to use it</span><ul>${v.ex.map(x=>`<li>${x}</li>`).join('')}</ul></div><div class="bk">${v.bk}</div></div></div>`).join('')}</div>
   <div class="card gram"><div class="eyebrow">Word of the evening</div><div class="btns"><button class="btn lamp" id="wd">Draw a word</button></div><div id="wdout" class="how">Draw one, guess its meaning from the sentence, then everyone writes a sentence about their own week using it.</div></div>
   <div id="wcheck"></div>
-  <div class="card gram"><div class="eyebrow">Grammar lab</div><h3>${p.gram.h}</h3><div class="rule">${p.gram.rule}</div><p>${p.gram.note}</p><div class="ask"><small>Your turn</small>${p.gram.ch}</div></div>`;
+  <div class="card gram"><div class="eyebrow">Grammar lab</div><h3>${p.gram.h}</h3><div class="rule">${p.gram.rule}</div><p>${p.gram.note}</p><div class="ask"><small>Your turn</small>${p.gram.ch}</div><div class="btns"><button class="btn lamp" id="gplay">Play the Grammar Car</button><button class="btn ghost" id="gwin">Sentence done: +2</button></div></div>`;
   const flip=c=>c.setAttribute('aria-expanded',c.getAttribute('aria-expanded')==='true'?'false':'true');
   const cards=el.querySelector('.cards');
   cards.onclick=e=>{
@@ -615,6 +615,7 @@ function rWords(p,el){
     const c=e.target.closest('.vc');if(c)flip(c)};
   cards.onkeydown=e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('vc')){e.preventDefault();flip(e.target)}};
   $('#wd').onclick=()=>{const v=p.vocab[Math.floor(Math.random()*p.vocab.length)];$('#wdout').innerHTML=`<b style="font-family:var(--f-display);font-size:34px;text-transform:uppercase">${v.w}</b><p>${v.cx}</p><details><summary>Show the meaning</summary><p><b>${v.me}.</b> Now write one sentence about <em>your own week</em>.</p></details>`};
+  if($('#gplay')){$('#gplay').onclick=()=>{S.tab='gram';renderPart()};$('#gwin').onclick=()=>{award(2,'grammar sentence');nextTeam()}}
   const st=S.wc[p.id]||(S.wc[p.id]={});
   mcq($('#wcheck'),st,()=>shuffle(p.vocab).map(v=>{const x=pickOpts(v.d,v.d[0]);return{q:v.blank,cls:'wide',o:x.o,a:x.a,rev:`<p><b>${v.w}</b>: ${v.me}.</p>`}}),2,
    (s,n)=>({eyebrow:'Word check done',line:s===n?'Every word used correctly.':'Flip the cards you missed and say each one in a new sentence.'}),
@@ -772,6 +773,18 @@ function renderSetup(){
     if(id==='rst')S.teams.forEach(t=>t.s=0);
     if(['addt','rmt','rst'].includes(id)){save();renderBar();renderSetup()}};
 }
+/* Word Car: four new words per part */
+(function(){
+const drop={1:['mesmerised'],2:['meddle','deteriorate'],5:['meddle'],14:['can’t-see-the-wood-for-the-trees']};
+const mk=s=>s;
+const add={
+4:[{w:'shaggy',pos:'adjective',pr:'SHAG-ee',me:'covered with long, rough, untidy hair',bk:'Victor Willows has “a shaggy beard” and a frayed suit (chapter “The Big Importance of Small Things”).',ex:['a shaggy dog','He had long, shaggy hair.'],cx:'The old dog had a <mark>shaggy</mark> coat that hid its eyes.',syn:'hairy, unkempt, untidy',blank:'The old man’s beard was long, thick and ____.',d:['shaggy','frayed','chiaroscuro','joshing']}],
+6:[{w:'spiralled',pos:'verb (spiral)',pr:'SPY-ruhld',me:'got worse or out of control very quickly',bk:'Dougie pretended things were normal, “even as they had spiralled far beyond control” (chapter “The Chase”).',ex:['Prices spiralled after the storm.','The argument spiralled out of control.'],cx:'The small quarrel <mark>spiralled</mark> out of control within minutes.',syn:'got out of hand, escalated, worsened',blank:'The argument ____ out of control within minutes.',d:['spiralled','reckless','restrain','contrapposto']}],
+10:[{w:'sacrifice',pos:'noun / verb',pr:'SAK-ri-fyce',me:'giving up something you value for something more important',bk:'The Ghost feels like his own protector, sacrificing one self to save the other.',ex:['Parents often make sacrifices for their children.'],cx:'She made a big <mark>sacrifice</mark> to pay for her son’s school.',syn:'giving up, loss, offering',blank:'She made a great ____ to give her children a better life.',d:['sacrifice','tinker','thereof','doppelganger']}]};
+P.forEach(p=>{if(p.locked||!p.vocab)return;
+ const dr=drop[p.id]||[];p.vocab=p.vocab.filter(v=>!dr.includes(v.w));
+ (add[p.id]||[]).forEach(v=>{if(!p.vocab.some(x=>x.w===v.w))p.vocab.push(v)});});
+})();
 renderReadto();renderBoard();renderPart();renderBar();renderSetup();
 /* keep the title on one line across the full width, whatever font is loaded */
 function fitTitle(){
