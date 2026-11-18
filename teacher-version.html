@@ -529,7 +529,7 @@ function renderBoard(){
   '';
   $('#board').onclick=e=>{const b=e.target.closest('[data-p]');if(!b)return;S.part=+b.dataset.p;S.tab='windows';renderBoard();renderPart();$('#part').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'})};
 }
-const tabsFor=p=>{const late=p.car&&['taboo','cloze'].includes(p.car.id);let t=TABS.map(x=>p.car&&x[0]===p.car.slot?(late?null:['car',p.car.name]):x).filter(Boolean);
+const tabsFor=p=>{const late=p.car&&['taboo','cloze'].includes(p.car.id);let t=TABS.map(x=>p.car&&x[0]===p.car.slot?(late?null:['car',p.car.name]):(p.car2&&x[0]===p.car2.slot?['car2',p.car2.name]:x)).filter(Boolean);
   if(late)t.splice(t.findIndex(x=>x[0]==='words')+1,0,['car',p.car.name]);
   if(p.gq&&p.gq.length)t.splice(t.findIndex(x=>x[0]==='quiz'),0,['gram','Grammar Car']);return t};
 function renderPart(){
@@ -544,7 +544,7 @@ function renderPart(){
   <div class="tabs" role="tablist">${tabsFor(p).map(t=>`<button class="tab" role="tab" aria-selected="${S.tab===t[0]}" data-t="${t[0]}">${t[1]}</button>`).join('')}</div>${body}`;
   el.querySelector('.tabs').onclick=e=>{const b=e.target.closest('[data-t]');if(!b)return;S.tab=b.dataset.t;renderPart()};
   const rv=$('#rv');if(rv)rv.onclick=()=>{S.reveal[p.id]=1;renderPart()};
-  if($('#panel')){clearInterval(ctick);if(!tabsFor(p).some(t=>t[0]===S.tab))S.tab='windows';({windows:rWindows,quotes:rQuotes,talk:rTalk,words:rWords,quiz:rQuiz,gram:rGramCar,car:(q,x)=>CARS[q.car.id](q,x)})[S.tab](p,$('#panel'))}
+  if($('#panel')){clearInterval(ctick);if(!tabsFor(p).some(t=>t[0]===S.tab))S.tab='windows';({windows:rWindows,quotes:rQuotes,talk:rTalk,words:rWords,quiz:rQuiz,gram:rGramCar,car:(q,x)=>CARS[q.car.id](q,x),car2:(q,x)=>CARS[q.car2.id](q,x)})[S.tab](p,$('#panel'))}
 }
 /* progress dots */
 const prog=(n,i,res)=>`<div class="prog">${Array.from({length:n},(_,k)=>`<i class="${res[k]===1?'ok':(k===i?'on':'')}"></i>`).join('')}</div>`;
@@ -603,7 +603,7 @@ function rWords(p,el){
   <div class="back"><div class="word">${v.w}</div><div class="pron">${v.pr} \u00b7 ${v.pos}</div><div><b>${v.me}.</b></div><div class="acc"><span class="hint">Accept similar words like</span>${v.syn}</div><div class="act"><button class="btn lamp" data-give="${i}">Similar word: +1 point</button><button class="btn ghost" data-pass="${i}">Not quite</button></div><div class="ex"><span class="hint">Other ways to use it</span><ul>${v.ex.map(x=>`<li>${x}</li>`).join('')}</ul></div><div class="bk">${v.bk}</div></div></div>`).join('')}</div>
   <div class="card gram"><div class="eyebrow">Word of the evening</div><div class="btns"><button class="btn lamp" id="wd">Draw a word</button></div><div id="wdout" class="how">Draw one, guess its meaning from the sentence, then everyone writes a sentence about their own week using it.</div></div>
   <div id="wcheck"></div>
-  <div class="card gram"><div class="eyebrow">Grammar lab</div><h3>${p.gram.h}</h3><div class="rule">${p.gram.rule}</div><p>${p.gram.note}</p><div class="ask"><small>Your turn</small>${p.gram.ch}</div><div class="btns"><button class="btn lamp" id="gplay">Play the Grammar Car</button><button class="btn ghost" id="gwin">Sentence done: +2</button></div></div>`;
+  `;
   const flip=c=>c.setAttribute('aria-expanded',c.getAttribute('aria-expanded')==='true'?'false':'true');
   const cards=el.querySelector('.cards');
   cards.onclick=e=>{
@@ -615,7 +615,6 @@ function rWords(p,el){
     const c=e.target.closest('.vc');if(c)flip(c)};
   cards.onkeydown=e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('vc')){e.preventDefault();flip(e.target)}};
   $('#wd').onclick=()=>{const v=p.vocab[Math.floor(Math.random()*p.vocab.length)];$('#wdout').innerHTML=`<b style="font-family:var(--f-display);font-size:34px;text-transform:uppercase">${v.w}</b><p>${v.cx}</p><details><summary>Show the meaning</summary><p><b>${v.me}.</b> Now write one sentence about <em>your own week</em>.</p></details>`};
-  if($('#gplay')){$('#gplay').onclick=()=>{S.tab='gram';renderPart()};$('#gwin').onclick=()=>{award(2,'grammar sentence');nextTeam()}}
   const st=S.wc[p.id]||(S.wc[p.id]={});
   mcq($('#wcheck'),st,()=>shuffle(p.vocab).map(v=>{const x=pickOpts(v.d,v.d[0]);return{q:v.blank,cls:'wide',o:x.o,a:x.a,rev:`<p><b>${v.w}</b>: ${v.me}.</p>`}}),2,
    (s,n)=>({eyebrow:'Word check done',line:s===n?'Every word used correctly.':'Flip the cards you missed and say each one in a new sentence.'}),
@@ -727,10 +726,12 @@ const CARS={speed:rSpeed,debate:rDebate,taboo:rTaboo,charades:rCharades,headline
 const GQS={};
 function rGramCar(p,el){
   const st=GQS[p.id]||(GQS[p.id]={});const g=p.gram;
-  mcq(el,st,()=>shuffle(p.gq).map(it=>{const right=it.o[0];const x=pickOpts(it.o,right);const full=it.q.includes('____')?it.q.replace('____','<b>'+right+'</b>'):'';
+  el.innerHTML=`<div class="card gram"><div class="eyebrow">Grammar lab</div><h3>${g.h}</h3><div class="rule">${g.rule}</div><p>${g.note}</p><div class="ask"><small>Your turn</small>${g.ch}</div><div class="btns"><button class="btn ghost" id="gwin">Sentence done: +2</button></div></div><div id="gquiz"></div>`;
+  $('#gwin').onclick=()=>{award(2,'grammar sentence');nextTeam()};
+  mcq($('#gquiz'),st,()=>shuffle(p.gq).map(it=>{const right=it.o[0];const x=pickOpts(it.o,right);const full=it.q.includes('____')?it.q.replace('____','<b>'+right+'</b>'):'';
     return{q:it.q.replace('____','<span class="gap">&nbsp;______&nbsp;</span>'),cls:'wide',o:x.o,a:x.a,rev:(full?`<p>${full}</p>`:`<p><b>${right}</b></p>`)+`<div class="ask"><small>Rule</small>${g.rule}</div>`}}),2,
    (s,n)=>({eyebrow:'Grammar Car cleared',line:s===n?'Perfect grammar. The conductor is impressed.':s>=n/2?'Good. Reread the rule and try again.':'Tricky! Read the rule on this card, then play again.'}),
-   `<h3>Grammar Car</h3><p class="how"><b>${g.h}.</b> ${g.rule} Read the sentence aloud and the active team picks the correct form. Each right answer is worth 2 points, and the ticket passes to the next team.</p>`);
+   `<h3>Grammar Car</h3><p class="how">Read the sentence aloud and the active team picks the correct form. Each right answer is worth 2 points, and the ticket passes to the next team.</p>`);
 }
 let tick=null;
 function rTalk(p,el){
@@ -803,6 +804,144 @@ CARS.lie=function(q,el){
    (s,n)=>({eyebrow:'Lie detector cleared',line:s===n?'Nothing gets past you.':s>=n/2?'Good ears. A few details slipped by.':'Slippery! Reread the Windows tab and try again.'}),
    `<h3>Lie Detector Car</h3><p class="how">Each round has three statements about the fight, the chase and the crash. Two are true and one is a lie. The team on turn picks the lie, and each right answer is worth 2 points.</p>`);
 };
+})();
+/* Charades Car: words and things from the part */
+(function(){
+const lists={
+2:[['Action','Waiting on a platform as a train arrives'],['Action','Handing over your ticket'],['Character','A ghost'],['Thing','A baby in a pram'],['Action','Counting coins into piles'],['Action','Knocking hard on a door'],['Thing','A toy train'],['Thing','An aeroplane'],['Action','Looking out of a train window'],['Action','Handing someone the right book']],
+6:[['Action','Driving a car very fast'],['Thing','A rabbit'],['Action','Bursting through a door and running down the street'],['Character','A police officer with pastry crumbs in his moustache'],['Thing','A rock concert guitar'],['Action','Wrestling for the steering wheel'],['Action','Pressing the brake pedal'],['Thing','A window smashing'],['Action','Throwing something out of a car window'],['Action','Stepping into the street and shouting “Stop!”']]};
+P.forEach(p=>{if(lists[p.id]&&!p.locked)p.charades=lists[p.id].map(x=>({c:x[0],t:x[1]}))});
+const old=CARS.charades,CHS={};
+CARS.charades=function(p,el){
+  if(!p.charades)return old(p,el);
+  const st=CHS[p.id]||(CHS[p.id]={used:[]});
+  el.innerHTML=`<h3>Charades Car</h3><p class="how">One player gets a word or a thing from this part and acts it out in silence: no words, no sounds. The team guesses within 90 seconds. The card starts hidden: press Show card for the actor, then Hide card before the team looks. Guessing team +2, actor +2.</p><div class="card"><div id="ch"><div class="qtext">Draw a card. Only the actor should look!</div></div><div class="btns"><button class="btn lamp" id="cd">Draw a card</button></div><p class="how" id="cleft"></p></div>`;
+  const left=()=>$('#cleft').textContent=(p.charades.length-st.used.length)+' cards left in this part';left();
+  $('#cd').onclick=()=>{clearInterval(ctick);let free=p.charades.map((_,i)=>i).filter(i=>!st.used.includes(i));if(!free.length){st.used=[];free=p.charades.map((_,i)=>i)}
+    const i=free[Math.floor(Math.random()*free.length)];st.used.push(i);left();const c=p.charades[i];
+    $('#ch').innerHTML=`<div class="eyebrow">Act it out: ${c.c}</div><div id="cw" class="blur"><div class="bigtxt">${c.t}</div></div><div class="btns"><button class="btn ghost" id="cs" aria-pressed="false">Show card</button><button class="btn lamp" id="cg">Guessed: +2</button><button class="btn ghost" id="ca">Actor +2</button></div><div id="ct0"></div>`;
+    $('#cs').onclick=()=>{const h=$('#cw').classList.toggle('blur');$('#cs').textContent=h?'Show card':'Hide card'};
+    cTimer($('#ct0'),90,'Start 90s');
+    $('#cg').onclick=()=>{clearInterval(ctick);award(2,'guessed it');$('#cw').classList.add('blur');$('#cs').textContent='Show card'};
+    $('#ca').onclick=()=>award(2,'great acting')};
+};
+})();
+/* Word Car: more useful words, same-part answer choices */
+(function(){
+const rep={
+4:['chiaroscuro',{w:'disturb',pos:'verb',pr:'dih-STURB',me:'to interrupt someone or spoil their peace and quiet',bk:'Wilbur sees Maggie so lost in her drawing that he is afraid to disturb her (chapter “The Bench”).',ex:['Please do not disturb the baby.','Sorry to disturb you, but there is a phone call.'],cx:'Please don’t <mark>disturb</mark> me while I am studying.',syn:'interrupt, bother, upset',blank:'He did not want to ____ her while she was drawing.'}],
+5:['usherette',{w:'scholarship',pos:'noun',pr:'SKOL-er-ship',me:'money given to a student to pay for their studies',bk:'Wilbur wins a full College Scholarship to Balliol College, Oxford (chapter “Coles Corner”).',ex:['She won a scholarship to study in Canada.'],cx:'She won a <mark>scholarship</mark> to study medicine at a top university.',syn:'grant, bursary, award',blank:'With a ____, he could study at Oxford without paying.'}],
+6:['contrapposto',{w:'abandoned',pos:'adjective',pr:'uh-BAN-duhnd',me:'left alone by someone who should have cared for you',bk:'“Dougie felt abandoned. And by all of them.” (chapter “The Chase”)',ex:['The dog was found abandoned on the road.','She felt abandoned when her friends moved away.'],cx:'The puppy had been <mark>abandoned</mark> in the park, cold and alone.',syn:'left alone, deserted, forsaken',blank:'After his friends left, he felt completely ____.'}],
+10:['doppelganger',{w:'doubtful',pos:'adjective',pr:'DOWT-ful',me:'not sure that something is true, right or likely',bk:'Maggie, doubtful, says that if he thinks it is the right thing, he has to do it.',ex:['I am doubtful that the plan will work.'],cx:'She looked <mark>doubtful</mark> when he said the bus would arrive on time.',syn:'unsure, uncertain, skeptical',blank:'She sounded ____ about borrowing so much money.'}],
+11:['pulpit',{w:'regret',pos:'noun / verb',pr:'rih-GRET',me:'a feeling of sadness about something you did or did not do',bk:'The Ghost remembers a radio poll about the regrets of the dying.',ex:['My biggest regret is not learning the piano sooner.'],cx:'My biggest <mark>regret</mark> is that I never learned to play the piano.',syn:'sadness, remorse, sorrow',blank:'His biggest ____ was never saying sorry.'}],
+13:['valet',{w:'vague',pos:'adjective',pr:'VAYG',me:'not clear or exact',bk:'Wilbur had only a vague memory of being told.',ex:['I have a vague idea where the station is.'],cx:'He had only a <mark>vague</mark> memory of the meeting.',syn:'unclear, fuzzy, hazy',blank:'I have only a ____ idea where the hotel is.'}]};
+P.forEach(p=>{if(p.locked||!p.vocab)return;const r=rep[p.id];
+ if(r){const i=p.vocab.findIndex(v=>v.w===r[0]);if(i>=0){const n=Object.assign({ex:[]},r[1]);p.vocab[i]=n}}
+ p.vocab.forEach(v=>{v.d=[v.w].concat(p.vocab.filter(x=>x.w!==v.w).map(x=>x.w).slice(0,3))});});
+})();
+/* Part 6: Lie Detector Car and Charades Car side by side */
+(function(){const p=P.find(x=>x.id===6);if(p&&!p.locked)p.car2={id:'charades',name:'Charades Car',slot:'talk'}})();
+/* Grammar Car: harder questions, six per part, correct answer listed first */
+(function(){
+const G={
+1:[['Which sentence is correct?',['By the time Maggie called, he had been practising the piano for two hours.','By the time Maggie called, he has been practising the piano for two hours.','By the time Maggie called, he had been practise the piano since two hours.','By the time Maggie called, he was been practising the piano for two hours.']],
+['His fingers were sore. He ____ the same piece since breakfast.',['had been playing','has been playing','had played','was playing']],
+['By the time the phone rang, Maggie ____ the whole letter, so she knew every word.',['had read','had been reading','has read','was reading']],
+['How long ____ at the station when the train finally arrived?',['had they been waiting','have they been waiting','did they wait','were they waiting']],
+['Which sentence is NOT correct?',['She had been wait for an hour when he called.','She had been waiting for an hour when he called.','They had been talking for a while.','He had been working all day.']],
+['Wilbur was out of breath because he ____ up the hill.',['had been running','has been running','had been ran','was been running']]],
+2:[['You ____ hurry. The train waits until everyone is on board.',['needn’t','mustn’t','don’t must','can’t to']],
+['Which sentence means “it is forbidden”?',['Passengers mustn’t get off between stations.','Passengers don’t have to get off between stations.','Passengers needn’t get off between stations.','Passengers haven’t to get off between stations.']],
+['Which sentence means “it is not necessary”?',['You don’t have to tell anyone.','You mustn’t tell anyone.','You must not to tell anyone.','You haven’t tell anyone.']],
+['Yesterday we ____ wait long, so we weren’t late.',['didn’t have to','mustn’t','don’t have to','hadn’t to']],
+['Choose the correct question.',['Do I have to buy a ticket?','Must I to buy a ticket?','Have I to buy a ticket?','Do I must buy a ticket?']],
+['The rule is clear: you ____ leave your bag on the platform. Someone might take it.',['mustn’t','don’t have to','needn’t','haven’t to']]],
+3:[['Nobody guessed that the shy boy ____ one day own the company.',['would','will','is going to','has']],
+['Which sentence is correct?',['Wilbur did not know that Maggie would become his wife.','Wilbur did not know that Maggie will become his wife.','Wilbur did not know that Maggie becomes his wife.','Wilbur did not know that Maggie is becoming his wife.']],
+['He thought: “I’ll never see her again.” So he thought he ____ never see her again.',['would','will','had','did']],
+['She promised that she ____ be there on time, but she was an hour late.',['would','will','is going to','has']],
+['He did not realise that this ____ be the last time he saw her.',['would','will','is going to','does']],
+['Which sentence is NOT correct?',['He knew he will never forget that night.','He knew he would never forget that night.','He said he would call.','She hoped he would come.']]],
+4:[['Which sentence is correct?',['Wilbur used to be shy, but he isn’t any more.','Wilbur would be shy, but he isn’t any more.','Wilbur is used to be shy, but he isn’t any more.','Wilbur use to be shy, but he isn’t any more.']],
+['When she was little, Maggie ____ draw on every wall in the house.',['would','used','is used to','use to']],
+['Did you ____ live near the sea?',['use to','used to','would','be used to']],
+['After years of night shifts, he ____ working in the dark.',['was used to','used to','would','is use to']],
+['Which sentence is NOT correct?',['We would live in a small flat when I was a child.','We used to live in a small flat when I was a child.','We would visit the beach every summer.','I used to hate carrots.']],
+['He didn’t ____ to like jazz, but now he plays it every day.',['use','used','would','be used']]],
+5:[['Which sentence is correct?',['Alice was a year older than Wilbur.','Alice was a year more old than Wilbur.','Alice was a year older that Wilbur.','Alice was a year oldest than Wilbur.']],
+['Wilbur was not quite as tall ____ Dougie.',['as','than','that','like']],
+['The more he practised, ____ he played.',['the better','better','the best','the more good']],
+['Dougie’s plan was far ____ dangerous than Wilbur’s.',['more','most','the more','too']],
+['Which sentence has a mistake?',['Maggie was as taller as her brother.','Maggie was as tall as her brother.','Maggie was taller than her brother.','Maggie was not as tall as her brother.']],
+['She is the ____ of the three sisters.',['youngest','younger','most young','more young']]],
+6:[['By the time Dougie got home, his friends ____ already left.',['had','have','were','would have']],
+['Which sentence is correct?',['Dougie was upset because everyone had abandoned him.','Dougie was upset because everyone has abandoned him.','Dougie was upset because everyone had abandon him.','Dougie was upset because everyone was abandoned him.']],
+['The officer ____ a pastry just before the chase began, so there were crumbs in his moustache.',['had eaten','has eaten','was eaten','had been ate']],
+['After the rabbit ____ across the road, Dougie hit the brake.',['had run','has run','had running','did ran']],
+['Which sentence uses the past perfect correctly?',['When we arrived, the show had already started.','When we arrived, the show already has started.','When we arrived, the show had already start.','When we arrived, the show already had start.']],
+['He was sure that he ____ the door before he ran.',['had locked','has locked','was locking','had lock']]],
+7:[['Which sentence is correct?',['The train was late because of the snow.','The train was late because of it snowed.','The train was late because the snow.','The train was late so of the snow.']],
+['____ he had missed the last bus, he walked home.',['As','Because of','So','But']],
+['It was raining, ____ we stayed inside.',['so','because','since of','as of']],
+['He stayed in bed ____ his illness.',['because of','because','so','as']],
+['Which sentence is NOT correct?',['She was tired because so she went home.','She was tired, so she went home.','She went home because she was tired.','Since she was tired, she went home.']],
+['____ you have already seen the film, we could watch something else.',['Since','Because of','So','Although']]],
+8:[['If I had known the train was late, I ____ left earlier.',['would have','would','will have','had']],
+['If I ____ you, I would not change anything.',['were','am','would be','had been']],
+['Which sentence is correct?',['If she had told him, he would have understood.','If she would have told him, he would have understood.','If she told him, he would have understood.','If she had told him, he would understand yesterday.']],
+['If he ____ more careful, the accident wouldn’t have happened.',['had been','were','would be','has been']],
+['What ____ happen if the track switched?',['would','will','had','did']],
+['Which sentence is NOT correct?',['If I would have time, I would visit her.','If I had time, I would visit her.','If I had had time, I would have visited her.','If I were rich, I would travel.']]],
+9:[['Which sentence is correct?',['I have never been to Venice.','I never been to Venice.','I have never went to Venice.','I am never been to Venice.']],
+['She ____ the piano since she was six.',['has played','played','is playing','plays']],
+['I ____ him yesterday.',['saw','have seen','had seen','have saw']],
+['____ you ever eaten snails?',['Have','Did','Are','Has']],
+['Which sentence is NOT correct?',['I have visited Rome last year.','I visited Rome last year.','I have visited Rome twice.','I have never visited Rome.']],
+['He has lived here ____ 2015.',['since','for','from','during']]],
+10:[['If you mix blue and yellow, you ____ green.',['get','will got','would get','getting']],
+['If it ____ tomorrow, we will cancel the picnic.',['rains','will rain','rained','would rain']],
+['Which sentence is correct?',['If she calls, I will tell her.','If she will call, I will tell her.','If she called, I will tell her.','If she calls, I would tell her.']],
+['Unless you ____ now, you will miss the train.',['leave','will leave','left','don’t leave']],
+['When the kettle ____, turn it off.',['boils','will boil','boiled','boiling']],
+['Which sentence is NOT correct?',['If I will see him, I will say hello.','If I see him, I will say hello.','If I see him, say hello.','When I see him, I will say hello.']]],
+11:[['We ____ left earlier. Now we have missed the train.',['should have','should','must have','would']],
+['He ____ told her the truth.',['should have','should had','shouldn’t had','should of']],
+['Which sentence is correct?',['I shouldn’t have said that.','I shouldn’t of said that.','I shouldn’t said that.','I don’t should have said that.']],
+['She ____ so late. Now she is exhausted.',['shouldn’t have stayed up','should have stayed up','shouldn’t stay up','hadn’t should stay up']],
+['“I ____ spent more time with them,” said the old man.',['should have','should','must','ought']],
+['If you were sick, you ____ stayed at home.',['should have','should had','are should','would be']]],
+12:[['The box was ____ heavy for me to lift.',['too','very','so','enough']],
+['He is not ____ to drive.',['old enough','enough old','too old','so old']],
+['Which sentence is correct?',['She was too tired to cook.','She was too tired for cook.','She was too tired cooking.','She was too much tired to cook.']],
+['There wasn’t ____ time to finish.',['enough','too','very','so']],
+['The soup was ____ hot that I burned my tongue.',['so','too','enough','very']],
+['Which sentence is NOT correct?',['It is enough warm to swim.','It is warm enough to swim.','It is too cold to swim.','The water is not warm enough to swim.']]],
+13:[['I wish I ____ more time.',['had','have','would have','will have']],
+['She wishes she ____ in a quieter city.',['lived','lives','would live','has lived']],
+['Which sentence is correct?',['I wish I were taller.','I wish I will be taller.','I wish I am taller.','I wish I would taller.']],
+['If only I ____ the answer!',['knew','know','will know','have known']],
+['He wishes he ____ a car, but he cannot afford one.',['had','has','would have','will have']],
+['Which sentence is NOT correct?',['I wish I can fly.','I wish I could fly.','I wish I were a bird.','I wish I had wings.']]],
+14:[['The thing with this game ____ it never ends.',['is that','is','that is','are that']],
+['The thing ____ time is that it never waits.',['with','for','at','by']],
+['Which sentence is correct?',['The thing with homework is that it is never finished.','The thing with homework that it is never finished.','The thing for homework is that it is never finished.','The thing with homework are that it is never finished.']],
+['The thing with my brother is that he ____ everything.',['forgets','forget','forgetting','is forget']],
+['Which sentence is NOT correct?',['The thing with money are that it never feels enough.','The thing with money is that it never feels enough.','The thing with love is that it is complicated.','The thing with trains is that they are late.']],
+['The thing with these shoes ____ that they are too tight.',['is','are','be','have']]],
+15:[['I ____ go now or I will miss the train.',['have to','am have to','must to','have go to']],
+['You ____ come tomorrow. It is optional.',['don’t have to','mustn’t','haven’t to','needn’t to']],
+['Which sentence is correct?',['She has to finish the report today.','She have to finish the report today.','She has finish the report today.','She is have to finish the report today.']],
+['____ you have to work on Sundays?',['Do','Have','Are','Must']],
+['Yesterday I ____ stay late, so I went home early.',['didn’t have to','don’t have to','hadn’t to','mustn’t']],
+['You ____ wear a coat. It is freezing outside.',['should','don’t have to','needn’t','mustn’t']]],
+16:[['If we ____ the shop, we will lose each other.',['expand','will expand','expanded','would expand']],
+['Which sentence is correct?',['If it rains tomorrow, we will stay in.','If it will rain tomorrow, we will stay in.','If it rained tomorrow, we will stay in.','If it rains tomorrow, we would stay in.']],
+['I ____ you as soon as I get there.',['will call','call','would call','am calling']],
+['We will go for a walk ____ the rain stops.',['as soon as','if will','unless','during']],
+['If you ____ the bridge, you will see the station.',['cross','will cross','crossed','crossing']],
+['Which sentence is NOT correct?',['If I will win, I will celebrate.','If I win, I will celebrate.','If I win, I’ll celebrate with you.','When I win, I will celebrate.']]]
+};
+P.forEach(p=>{const g=G[p.id];if(g&&!p.locked)p.gq=g.map(x=>({q:x[0],o:x[1]}))});
 })();
 renderReadto();renderBoard();renderPart();renderBar();renderSetup();
 /* keep the title on one line across the full width, whatever font is loaded */
