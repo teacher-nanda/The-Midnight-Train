@@ -945,6 +945,33 @@ const G={
 };
 P.forEach(p=>{const g=G[p.id];if(g&&!p.locked)p.gq=g.map(x=>({q:x[0],o:x[1]}))});
 })();
+/* Notes box */
+(function(){
+const st=document.createElement('style');st.textContent=`.notebtn{position:fixed;left:0;top:42%;z-index:15;writing-mode:vertical-rl;background:var(--lamp);color:var(--on-lamp);border:0;border-radius:0 8px 8px 0;padding:14px 9px;font-family:var(--f-display);font-weight:600;font-size:19px;letter-spacing:.08em;text-transform:uppercase;box-shadow:0 2px 10px #0004;cursor:pointer}.notebtn:hover{filter:brightness(1.08)}
+.notepan{position:fixed;left:0;top:0;bottom:0;z-index:41;width:min(420px,100%);background:var(--surface);color:var(--ink);border-right:2px solid var(--lamp);box-shadow:4px 0 24px #0004;display:none;flex-direction:column;gap:10px;padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}.notepan.open{display:flex}
+.notepan h3{margin:0;font-family:var(--f-display);font-size:26px;letter-spacing:.04em;text-transform:uppercase}.notepan .nh{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.notepan textarea{flex:1;min-height:200px;width:100%;resize:none;font:18px/1.5 var(--f-body);color:var(--ink);background:#fff;background:color-mix(in srgb,var(--surface) 55%,#fff);border:1.5px solid var(--line);border-radius:10px;padding:12px}
+.notepan .nb{display:flex;gap:8px;flex-wrap:wrap}.notepan small{color:var(--muted)}
+@media(max-width:640px){.notebtn{writing-mode:horizontal-tb;top:auto;bottom:calc(150px + env(safe-area-inset-bottom,0px));left:12px;border-radius:999px;padding:8px 16px;font-size:17px}}`;
+document.head.appendChild(st);
+const KEY=id=>'mt-notes-'+id;
+const get=id=>{try{return localStorage.getItem(KEY(id))||''}catch(e){return mem[id]||''}};
+const mem={};
+const put=(id,v)=>{mem[id]=v;try{localStorage.setItem(KEY(id),v)}catch(e){}};
+const btn=document.createElement('button');btn.className='notebtn';btn.type='button';btn.textContent='Notes';btn.setAttribute('aria-label','Open notes');
+const pan=document.createElement('div');pan.className='notepan';pan.setAttribute('role','dialog');pan.setAttribute('aria-label','Notes');
+pan.innerHTML='<div class="nh"><h3 id="ntitle">Notes</h3><button class="btn ghost" id="nclose" type="button">Close</button></div><textarea id="ntext" placeholder="Type your notes here: new words, ideas, questions for the next session." aria-label="Notes"></textarea><div class="nb"><button class="btn ghost" id="ncopy" type="button">Copy notes</button><button class="btn ghost" id="nsave" type="button">Save as file</button></div><small>Notes stay on this device and are kept separately for each part.</small>';
+document.body.appendChild(btn);document.body.appendChild(pan);
+const ta=pan.querySelector('#ntext');
+const fill=()=>{const p=cur();pan.querySelector('#ntitle').textContent='Notes · Part '+p.id;ta.value=get(p.id);ta.dataset.id=p.id};
+btn.onclick=()=>{fill();pan.classList.add('open');ta.focus()};
+pan.querySelector('#nclose').onclick=()=>{pan.classList.remove('open');btn.focus()};
+ta.oninput=()=>put(ta.dataset.id,ta.value);
+pan.addEventListener('keydown',e=>{if(e.key==='Escape')pan.querySelector('#nclose').click()});
+pan.querySelector('#ncopy').onclick=()=>{const t=ta.value;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Notes copied.'),()=>{ta.select();try{document.execCommand('copy');toast('Notes copied.')}catch(e){toast('Select the text and copy it.')}})};
+pan.querySelector('#nsave').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ta.value],{type:'text/plain'}));a.download='midnight-train-notes-part-'+ta.dataset.id+'.txt';document.body.appendChild(a);a.click();a.remove()};
+const rp=renderPart;renderPart=function(){rp.apply(this,arguments);if(pan.classList.contains('open'))fill()};
+})();
 renderReadto();renderBoard();renderPart();renderBar();renderSetup();
 /* keep the title on one line across the full width, whatever font is loaded */
 function fitTitle(){
