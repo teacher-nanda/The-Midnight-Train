@@ -507,18 +507,20 @@ CARS.lie=function(q,el){
 /* Charades Car: words and things from the part */
 (function(){
 const lists={
-2:[['Action','Waiting on a platform as a train arrives'],['Action','Handing over your ticket'],['Character','A ghost'],['Thing','A baby in a pram'],['Action','Counting coins into piles'],['Action','Knocking hard on a door'],['Thing','A toy train'],['Thing','An aeroplane'],['Action','Looking out of a train window'],['Action','Handing someone the right book']],
-6:[['Action','Driving a car very fast'],['Thing','A rabbit'],['Action','Bursting through a door and running down the street'],['Character','A police officer with pastry crumbs in his moustache'],['Thing','A rock concert guitar'],['Action','Wrestling for the steering wheel'],['Action','Pressing the brake pedal'],['Thing','A window smashing'],['Action','Throwing something out of a car window'],['Action','Stepping into the street and shouting “Stop!”']]};
+2:[['Action','Waving goodbye'],['Thing','A train'],['Thing','A ticket'],['Character','A ghost'],['Thing','A baby'],['Action','Counting money'],['Action','Knocking on a door'],['Action','Reading a book'],['Action','Looking out of a window'],['Thing','An aeroplane'],['Action','Running to catch a train'],['Action','Crying']],
+6:[['Action','Driving a car'],['Thing','A rabbit'],['Character','A police officer'],['Action','Playing the guitar'],['Action','Running'],['Action','Braking'],['Action','Shouting “Stop!”'],['Action','Throwing something'],['Thing','A broken window'],['Action','Opening a door'],['Action','Eating a pastry'],['Action','Being angry']]};
 P.forEach(p=>{if(lists[p.id]&&!p.locked)p.charades=lists[p.id].map(x=>({c:x[0],t:x[1]}))});
 const old=CARS.charades,CHS={};
 CARS.charades=function(p,el){
   if(!p.charades)return old(p,el);
   const st=CHS[p.id]||(CHS[p.id]={used:[]});
-  el.innerHTML=`<h3>Charades Car</h3><p class="how">One player gets a word or a thing from this part and acts it out in silence: no words, no sounds. The team guesses within 90 seconds. The card starts hidden: press Show card for the actor, then Hide card before the team looks. Guessing team +2, actor +2.</p><div class="card"><div id="ch"><div class="qtext">Draw a card. Only the actor should look!</div></div><div class="btns"><button class="btn lamp" id="cd">Draw a card</button></div><p class="how" id="cleft"></p></div>`;
+  el.innerHTML=`<h3>Charades Car</h3><p class="how">One player gets a simple word or thing from this part and acts it out in silence: no words, no sounds. The team guesses within 90 seconds. If it is too hard, press Give a hint or Skip this card. The card starts hidden: press Show card for the actor, then Hide card before the team looks. Guessing team +2, actor +2.</p><div class="card"><div id="ch"><div class="qtext">Draw a card. Only the actor should look!</div></div><div class="btns"><button class="btn lamp" id="cd">Draw a card</button></div><p class="how" id="cleft"></p></div>`;
   const left=()=>$('#cleft').textContent=(p.charades.length-st.used.length)+' cards left in this part';left();
   $('#cd').onclick=()=>{clearInterval(ctick);let free=p.charades.map((_,i)=>i).filter(i=>!st.used.includes(i));if(!free.length){st.used=[];free=p.charades.map((_,i)=>i)}
     const i=free[Math.floor(Math.random()*free.length)];st.used.push(i);left();const c=p.charades[i];
-    $('#ch').innerHTML=`<div class="eyebrow">Act it out: ${c.c}</div><div id="cw" class="blur"><div class="bigtxt">${c.t}</div></div><div class="btns"><button class="btn ghost" id="cs" aria-pressed="false">Show card</button><button class="btn lamp" id="cg">Guessed: +2</button><button class="btn ghost" id="ca">Actor +2</button></div><div id="ct0"></div>`;
+    $('#ch').innerHTML=`<div class="eyebrow">Act it out: ${c.c}</div><div id="cw" class="blur"><div class="bigtxt">${c.t}</div></div><div class="btns"><button class="btn ghost" id="cs" aria-pressed="false">Show card</button><button class="btn lamp" id="cg">Guessed: +2</button><button class="btn ghost" id="ca">Actor +2</button></div><div class="btns"><button class="btn ghost" id="ch1">Give a hint</button><button class="btn ghost" id="csk">Skip this card</button></div><p class="how" id="chint"></p><div id="ct0"></div>`;
+    $('#ch1').onclick=()=>{const w=c.t.replace(/^(A|An) /,'');$('#chint').textContent='Hint: '+c.c.toLowerCase()+', starts with “'+w[0].toUpperCase()+'”, '+w.split(' ').length+(w.split(' ').length>1?' words':' word')};
+    $('#csk').onclick=()=>{clearInterval(ctick);$('#cd').click()};
     $('#cs').onclick=()=>{const h=$('#cw').classList.toggle('blur');$('#cs').textContent=h?'Show card':'Hide card'};
     cTimer($('#ct0'),90,'Start 90s');
     $('#cg').onclick=()=>{clearInterval(ctick);award(2,'guessed it');$('#cw').classList.add('blur');$('#cs').textContent='Show card'};
