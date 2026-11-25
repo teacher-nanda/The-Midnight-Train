@@ -720,6 +720,25 @@ p.quiz=[
 {q:'What almost makes Wilbur forgive himself, when nothing else could reach him?',o:['A novel by John Steinbeck','A letter from Maggie','A long talk with Mr Bagdale','A walk down Ecclesall Road'],a:0,e:'The Grapes of Wrath by John Steinbeck. No other book at that time could reach him, but that one did.'},
 {q:'Wilbur arrives late on a Friday. How does Mr Bagdale describe his shop?',o:['A family, not a factory','A school for young readers','A business, not the Salvation Army','A home for tired workers'],a:2,e:'“I am not the Salvation Army. I’m a business. Even my mother would be tired of you by now.”'}
 ];p.hideQuiz=false})();
+/* Part 8: audit fixes, checked against the notebook */
+(function(){const p=P.find(x=>x.id===8);if(!p||p.locked)return;
+p.stops[3].text=p.stops[3].text+' He tells her that Mr Bagdale is dying and has handed him the keys to the shop, and that he helped his mother buy her first house, with its own little garden.';
+p.moments=['Wilbur’s younger self does not hear him, but Agnes says something got through.','Maggie breaks up with Edward, Wilbur asks her out, and two days later she gets an offer to move to London.','At the Crucible Theatre, Maggie says, “Hello, trouble.”','Out on a quiet street, Maggie tells Wilbur, “Kiss me, Wilbur.”'];
+p.quiz=[
+{q:'Wilbur tells Agnes that his younger self did not hear him. What does she answer?',o:['Something got through.','He will remember it in a dream.','That is impossible.','He heard only the wind.'],a:0,e:'“Nothing. He didn’t hear me.” “Something got through.”'},
+{q:'Wilbur asks what would happen to Agnes if the track switched and the Midnight Train disappeared. What does she say?',o:['She would stay in eternity, but she would not be on the train','She would disappear together with Wilbur','She would take his place on the train','She would go back to Bagdale’s Bookshop'],a:0,e:'“I would stay being in eternity … But I wouldn’t be on the train because the train would leave the tracks and disappear.”'},
+{q:'Why does the date between Wilbur and Maggie lead nowhere?',o:['Two days after he asks her out, she gets an offer to move to London','Edward comes back and she changes her mind','Wilbur loses his nerve at the last minute','His mother falls ill that week'],a:0,e:'Two days after he asked her out she had an incredible offer. She was moving to London. “So the date led nowhere.”'},
+{q:'In the lobby of the Crucible Theatre, what does seeing Maggie feel like to Wilbur?',o:['As though a part of him had not been breathing for a year','Like waking from a long sleep','Like the first day of summer','Like finally winning an argument'],a:0,e:'For Wilbur, seeing Maggie felt like relief, as though a part of him hadn’t been breathing this last year.'},
+{q:'What does Wilbur tell Maggie about his life?',o:['Mr Bagdale is dying and has handed him the keys to the shop','He has sold the shop and plans to move to London','He has won a place at Oxford at last','He has asked Edward to leave Sheffield'],a:0,e:'He told her that Mr Bagdale was dying and had, quite literally, handed him the keys to the shop.'},
+{q:'What does Maggie give Wilbur’s racing mind?',o:['The commas and the full stops','A map and a compass','A light to head for','A new chapter every year'],a:0,e:'His mind had been racing since Dougie died, like a sentence without punctuation. Maggie gave him the commas and the full stops.'}
+];
+p.vocab.forEach(v=>{if(v.w==='anaesthetic'){v.w='anesthetic';v.cx=v.cx.replace('anaesthetic','anesthetic');v.blank=v.blank.replace('anaesthetic','anesthetic');v.bk='“…even as work became a kind of anaesthetic, she had never fully left his mind.” (chapter “Warm White Wine”; the book spells it “anaesthetic”)';v.ex=v.ex.map(x=>x.replace('anaesthetic','anesthetic'))}
+ if(v.w==='agoraphobia')v.cx=v.cx.replace('centres','centers')});
+})();
+/* Part 7: puzzle is 4 pieces plus 1 extra card */
+(function(){const p=P.find(x=>x.id===7);if(!p||p.locked)return;
+p.moments=['Wilbur’s mam asks him, “Why did you let it happen?”','His mother admits herself to Middlewood Hospital for six months.','The Ghost points to the Palace Cinema and says Maggie is the best thing that will ever happen to Wilbur.','On a Friday, Wilbur arrives late at the bookshop and hears: never ruin an apology with an excuse.'];
+p.decoy='Wilbur’s mam leaves Middlewood Hospital after one week.';})();
 renderReadto();renderBoard();renderPart();renderBar();renderSetup();
 /* keep the title on one line across the full width, whatever font is loaded */
 function fitTitle(){
