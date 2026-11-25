@@ -1038,6 +1038,13 @@ p.vocab.forEach(v=>{if(v.w==='anaesthetic'){v.w='anesthetic';v.cx=v.cx.replace('
 (function(){const p=P.find(x=>x.id===7);if(!p||p.locked)return;
 p.moments=['Wilbur’s mam asks him, “Why did you let it happen?”','His mother admits herself to Middlewood Hospital for six months.','The Ghost points to the Palace Cinema and says Maggie is the best thing that will ever happen to Wilbur.','On a Friday, Wilbur arrives late at the bookshop and hears: never ruin an apology with an excuse.'];
 p.decoy='Wilbur’s mam leaves Middlewood Hospital after one week.';})();
+/* Part 8: The Cemetery stop, from the pasted chapter text */
+(function(){const p=P.find(x=>x.id===8);if(!p||p.locked)return;
+p.stops.unshift({when:'1969, a cemetery bench',title:'Chiaroscuro',pg:'The Cemetery',text:'Once, somewhere in 1969, the Midnight Train stops at the cemetery. The Ghost finds Wilbur on a bench, staring at the grave of Douglas James Budd, 1939–1964, “A beloved son and brother.” Wilbur’s hair is longer and he looks looser, and he is reading The Society of the Spectacle in his French Marxist philosophy phase. Maggie arrives with short hair, a heavy fringe and a red Mary Quant-style dress, and greets him with “Hello, trouble.” She talks to her mam’s grave, and Wilbur admits he sometimes argues with his. She says she left teacher-training for the art college on Psalter Lane after Wilbur’s disappointed face, and now makes posters. Wilbur tells her that after the night of the concert she was “the only shining thing,” like chiaroscuro in an old painting. The Ghost feels the speed of time and hopes his young self feels it too.',ask:'Do you ever talk to someone who is no longer there? What would they say back?'});
+p.who.unshift({q:'I think the trouble with life is we do things because we should. We act for outside eyes.',a:'Maggie',o:['Maggie','Doreen','Agnes','Alice'],ctx:'Telling Wilbur why she left teacher-training for art (chapter “The Cemetery”).',talk:'Do you do more things because you should, or because you want to?'});
+const i=p.quiz.findIndex(x=>/Crucible Theatre, what does seeing Maggie feel/.test(x.q));
+if(i>-1)p.quiz[i]={q:'In the cemetery, Wilbur says Maggie was “the only shining thing” on the night of the concert. Which art word does he borrow to explain it?',o:['Chiaroscuro','Perspective','Silhouette','Mosaic'],a:0,e:'“Chiaroscuro … the one that explains light and dark in old paintings.” Wilbur: “You were the only shining thing.”'};
+})();
 renderReadto();renderBoard();renderPart();renderBar();renderSetup();
 /* keep the title on one line across the full width, whatever font is loaded */
 function fitTitle(){
