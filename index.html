@@ -710,6 +710,16 @@ const T={
 };
 P.forEach(p=>{if(T[p.id]&&!p.locked)p.talk=T[p.id].map(x=>({c:x[0],t:x[1]}))});
 })();
+/* Part 7: Conductor's quiz, six less obvious questions */
+(function(){const p=P.find(x=>x.id===7);if(!p||p.locked)return;
+p.quiz=[
+{q:'When Wilbur’s mam speaks to him after the crash, which two questions does she ask?',o:['Why did you tell him to go out with you? Why did you let him keep driving?','Why did you take the car? Why did you not call for help?','Why were you drinking? Why did you leave Maggie?','Why did you come home late? Why did you not tell me?'],a:0,e:'“Why did you tell him to go out with you? Why did you let him keep driving?” Wilbur answers, “I’m sorry, Mam … It’s my fault.”'},
+{q:'As the Ghost watches Edith, what does he realize?',o:['She is hiding the truth about the crash','Dougie’s death had killed his mother too','She will never forgive Wilbur','She wants Wilbur to leave Sheffield'],a:1,e:'He realizes how Dougie’s death had killed his mother too.'},
+{q:'Why must the Ghost never see himself sleeping?',o:['His living self would wake up and see the train','He would forget all the memories he has seen','His living self would see his future in a dream, and his eternity would be gone','Agnes would have to take him back to the start'],a:2,e:'Agnes: his living self would end up seeing his own future in a dream. Then his eternity would be gone.'},
+{q:'The Ghost points to the Palace Cinema. What does he say is inside?',o:['Dougie’s favorite film','Mr Bagdale’s new shop','Wilbur’s mother, waiting for him','Maggie, and Wilbur’s future'],a:3,e:'“Over there is the Palace Cinema. And inside is Maggie. And your future.”'},
+{q:'What almost makes Wilbur forgive himself, when nothing else could reach him?',o:['A novel by John Steinbeck','A letter from Maggie','A long talk with Mr Bagdale','A walk down Ecclesall Road'],a:0,e:'The Grapes of Wrath by John Steinbeck. No other book at that time could reach him, but that one did.'},
+{q:'Wilbur arrives late on a Friday. How does Mr Bagdale describe his shop?',o:['A family, not a factory','A school for young readers','A business, not the Salvation Army','A home for tired workers'],a:2,e:'“I am not the Salvation Army. I’m a business. Even my mother would be tired of you by now.”'}
+];p.hideQuiz=false})();
 renderReadto();renderBoard();renderPart();renderBar();renderSetup();
 /* keep the title on one line across the full width, whatever font is loaded */
 function fitTitle(){
